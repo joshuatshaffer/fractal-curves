@@ -118,3 +118,10 @@ export function generateFractalCurve(
         .done();
     });
 }
+
+export function maxIterationsFromMaxPoints(
+  maxPoints: number,
+  generator: FractalCurveGenerator
+) {
+  return Math.floor(Math.log(maxPoints) / Math.log(generator.length));
+}
