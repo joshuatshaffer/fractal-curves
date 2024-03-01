@@ -1,17 +1,18 @@
 import { useState } from "react";
 import styles from "./App.module.scss";
 import { Arrow, ArrowMarker } from "./Arrow";
+import { Path } from "./Path";
 import {
   FractalCurveGenerator,
   generateFractalCurve,
   getBaseLine,
   getLines,
 } from "./fractal";
-import { Path } from "./Path";
 import { ViewSettingsContextProvider } from "./viewSpace";
+import { ControlPoint } from "./ControlPoint";
 
 export function App() {
-  const [generator] = useState<FractalCurveGenerator>([
+  const [generator, setGenerator] = useState<FractalCurveGenerator>([
     {
       reversed: false,
       x: 10,
@@ -37,9 +38,14 @@ export function App() {
   return (
     <>
       <ViewSettingsContextProvider
-        value={{ scale: 3, translate: { x: 10, y: 50 } }}
+        value={{ scale: 10, translate: { x: 10, y: 250 } }}
       >
-        <svg className={styles.view} viewBox="0 0 300 100">
+        <svg
+          className={styles.view}
+          viewBox="0 0 500 500"
+          width={500}
+          height={500}
+        >
           <defs>
             <ArrowMarker />
           </defs>
@@ -51,6 +57,15 @@ export function App() {
           ))}
 
           <Path points={generateFractalCurve(generator, 4)} />
+
+          {generator.map((_, i) => (
+            <ControlPoint
+              key={i}
+              generator={generator}
+              setGenerator={setGenerator}
+              index={i}
+            />
+          ))}
         </svg>
       </ViewSettingsContextProvider>
     </>

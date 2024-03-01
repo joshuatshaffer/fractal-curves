@@ -18,6 +18,10 @@ const ViewSettingsContext = createContext<ViewSettings>({
 export const ViewSettingsContextProvider = ViewSettingsContext.Provider;
 
 export function usePointToSvg() {
-  const v = useContext(ViewSettingsContext);
+  const v = useViewSettings();
   return (p: Point) => pointToSvg(v, p);
+}
+
+export function useViewSettings() {
+  return useContext(ViewSettingsContext);
 }
