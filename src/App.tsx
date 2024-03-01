@@ -13,6 +13,7 @@ import { useHashState } from "./useHashState";
 import { useState } from "react";
 
 export function App() {
+  const [fillMode, setFillMode] = useState(true);
   const [iterations, setIterations] = useState(4);
   const [generator, setGenerator] = useHashState<FractalCurveGenerator>([
     {
@@ -63,15 +64,21 @@ export function App() {
           }}
         />
       </div>
+      <div>
+        <label htmlFor="fill-checkbox">Fill </label>
+        <input
+          id="fill-checkbox"
+          type="checkbox"
+          checked={fillMode}
+          onChange={(e) => {
+            setFillMode(e.target.checked);
+          }}
+        />
+      </div>
       <ViewSettingsContextProvider
         value={{ scale: 10, translate: { x: 10, y: 250 } }}
       >
-        <svg
-          className={styles.view}
-          viewBox="0 0 500 500"
-          width={500}
-          height={500}
-        >
+        <svg className={styles.view} style={{ width: "100%", height: "100vh" }}>
           <defs>
             <ArrowMarker />
           </defs>
@@ -82,7 +89,10 @@ export function App() {
             <Arrow key={i} from={from} to={to} color="#0000ff55" />
           ))}
 
-          <Path points={generateFractalCurve(generator, iterations)} />
+          <Path
+            points={generateFractalCurve(generator, iterations)}
+            fillMode={fillMode}
+          />
 
           {generator.map((_, i) => (
             <ControlPoint
