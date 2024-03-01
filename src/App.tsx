@@ -1,35 +1,58 @@
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
 import styles from "./App.module.scss";
+import { Arrow, ArrowMarker } from "./Arrow";
+import {
+  FractalCurveGenerator,
+  generateFractalCurve,
+  getBaseLine,
+  getLines,
+} from "./fractal";
+import { Path } from "./Path";
+import { ViewSettingsContextProvider } from "./viewSpace";
 
-function App() {
-  const [count, setCount] = useState(0);
+export function App() {
+  const [generator] = useState<FractalCurveGenerator>([
+    {
+      reversed: false,
+      x: 10,
+      y: 0,
+    },
+    {
+      reversed: true,
+      x: 20,
+      y: 10,
+    },
+    {
+      reversed: false,
+      x: 30,
+      y: 0,
+    },
+    {
+      reversed: false,
+      x: 40,
+      y: 0,
+    },
+  ]);
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className={styles.card}>
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className={styles.readTheDocs}>
-        Click on the Vite and React logos to learn more
-      </p>
+      <ViewSettingsContextProvider
+        value={{ scale: 3, translate: { x: 10, y: 50 } }}
+      >
+        <svg className={styles.view} viewBox="0 0 300 100">
+          <defs>
+            <ArrowMarker />
+          </defs>
+
+          <Arrow {...getBaseLine(generator)} color="#ff000055" />
+
+          {getLines(generator).map(({ from, to }, i) => (
+            <Arrow key={i} from={from} to={to} color="#0000ff55" />
+          ))}
+
+          <Path points={generateFractalCurve(generator, 4)} />
+        </svg>
+      </ViewSettingsContextProvider>
     </>
   );
 }
-
-export default App;
