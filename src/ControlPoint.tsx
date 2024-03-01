@@ -20,11 +20,9 @@ export function ControlPoint({
     <circle
       style={{ touchAction: "none" }}
       {...onDrag((e) => {
-        console.log("drag start", e);
         const start = eventXY(e);
         return {
           onDragMove: (e) => {
-            console.log("drag move", e);
             const current = eventXY(e);
             const dx = (current.x - start.x) / viewSettings.scale;
             const dy = (current.y - start.y) / viewSettings.scale;
@@ -33,9 +31,6 @@ export function ControlPoint({
                 i === index ? { ...p, x: p.x + dx, y: p.y + dy } : p
               )
             );
-          },
-          onDragEnd: (e) => {
-            console.log("drag end", e);
           },
         };
       })}

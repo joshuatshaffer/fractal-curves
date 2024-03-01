@@ -1,4 +1,3 @@
-import { useState } from "react";
 import styles from "./App.module.scss";
 import { Arrow, ArrowMarker } from "./Arrow";
 import { Path } from "./Path";
@@ -10,9 +9,10 @@ import {
 } from "./fractal";
 import { ViewSettingsContextProvider } from "./viewSpace";
 import { ControlPoint } from "./ControlPoint";
+import { useHashState } from "./useHashState";
 
 export function App() {
-  const [generator, setGenerator] = useState<FractalCurveGenerator>([
+  const [generator, setGenerator] = useHashState<FractalCurveGenerator>([
     {
       reversed: false,
       x: 10,
