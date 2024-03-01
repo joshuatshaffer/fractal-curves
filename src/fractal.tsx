@@ -33,10 +33,10 @@ export function getLines(generator: FractalCurveGenerator): Line[] {
   });
 }
 
-function getRotationAndScale(
-  from: Point,
-  to: Point
-): { angle: number; mag: number } {
+function getRotationAndScale({ from, to }: Line): {
+  angle: number;
+  mag: number;
+} {
   const dx = to.x - from.x;
   const dy = to.y - from.y;
   const angle = Math.atan2(dy, dx);
@@ -60,26 +60,36 @@ export function translate(p: Point, d: Point): Point {
 
 export function generateFractalCurve(
   generator: FractalCurveGenerator,
-  level: number
+  iterations: number
 ): Point[] {
-  if (level < 0 || !Number.isInteger(level)) {
-    throw new Error("Level must be a non-negative integer");
+  if (iterations < 0 || !Number.isFinite(iterations)) {
+    throw new Error("Iterations must be a non-negative number");
   }
 
-  if (level === 0) {
+  if (iterations === 0) {
     const l = getBaseLine(generator);
     return [l.from, l.to];
   }
 
-  if (level === 1) {
-    return [{ x: 0, y: 0 }, ...generator];
+  const base = getRotationAndScale(getBaseLine(generator));
+
+  if (iterations <= 1) {
+    return [
+      { x: 0, y: 0 },
+      ...generator.map((p, i) => {
+        const fooX =
+          ((Math.cos(base.angle) * (i + 1)) / generator.length) * base.mag;
+        const fooY =
+          ((Math.sin(base.angle) * (i + 1)) / generator.length) * base.mag;
+        return {
+          x: fooX * (1 - iterations) + p.x * iterations,
+          y: fooY * (1 - iterations) + p.y * iterations,
+        };
+      }),
+    ];
   }
 
-  const points = generateFractalCurve(generator, level - 1);
-
-  const l = getBaseLine(generator);
-
-  const base = getRotationAndScale(l.from, l.to);
+  const points = generateFractalCurve(generator, iterations - 1);
 
   return generator
     .map((to, i) => {
@@ -89,7 +99,7 @@ export function generateFractalCurve(
         : { reversed: false, from, to };
     })
     .flatMap(({ from, to, reversed }, i) => {
-      const { angle: angle, mag: mag } = getRotationAndScale(from, to);
+      const { angle: angle, mag: mag } = getRotationAndScale({ from, to });
 
       const scaleFactor = mag / base.mag;
       const rotation = angle - base.angle;

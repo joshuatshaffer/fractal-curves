@@ -10,8 +10,10 @@ import {
 import { ViewSettingsContextProvider } from "./viewSpace";
 import { ControlPoint } from "./ControlPoint";
 import { useHashState } from "./useHashState";
+import { useState } from "react";
 
 export function App() {
+  const [iterations, setIterations] = useState(4);
   const [generator, setGenerator] = useHashState<FractalCurveGenerator>([
     {
       reversed: false,
@@ -37,6 +39,30 @@ export function App() {
 
   return (
     <>
+      <div>
+        <label htmlFor="iterations-input">Iterations </label>
+        <input
+          id="iterations-input"
+          type="number"
+          min={0}
+          max={5}
+          value={iterations}
+          onChange={(e) => {
+            setIterations(Number(e.target.value));
+          }}
+        />
+        <input
+          id="iterations-slider"
+          type="range"
+          min={0}
+          max={5}
+          step={0.1}
+          value={iterations}
+          onChange={(e) => {
+            setIterations(Number(e.target.value));
+          }}
+        />
+      </div>
       <ViewSettingsContextProvider
         value={{ scale: 10, translate: { x: 10, y: 250 } }}
       >
@@ -56,7 +82,7 @@ export function App() {
             <Arrow key={i} from={from} to={to} color="#0000ff55" />
           ))}
 
-          <Path points={generateFractalCurve(generator, 4)} />
+          <Path points={generateFractalCurve(generator, iterations)} />
 
           {generator.map((_, i) => (
             <ControlPoint
