@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import styles from "./App.module.scss";
 import { Arrow, ArrowMarker } from "./Arrow";
 import { ControlPoint } from "./ControlPoint";
@@ -21,34 +21,51 @@ import { ViewSettingsContextProvider } from "./viewSpace";
 const maxPoints = 10_000;
 
 export function App() {
-  const [fillMode, setFillMode] = useState(true);
-  const [iterations0, setIterations] = useState(4);
-  const [generator, setGenerator] = useHashState<FractalCurveGenerator>([
-    {
-      reversed: false,
-      x: 10,
-      y: 0,
-    },
-    {
-      reversed: true,
-      x: 20,
-      y: 10,
-    },
-    {
-      reversed: false,
-      x: 30,
-      y: 0,
-    },
-    {
-      reversed: false,
-      x: 40,
-      y: 0,
-    },
-  ]);
+  const [state, setState] = useHashState<{
+    iterations: number;
+    fillMode: boolean;
+    generator: FractalCurveGenerator;
+  }>({
+    iterations: 4,
+    fillMode: false,
+    generator: [
+      {
+        reversed: true,
+        x: 10,
+        y: 0,
+      },
+      {
+        reversed: false,
+        x: 10,
+        y: 10,
+      },
+    ],
+  });
+
+  const generator = state.generator;
+  const setGenerator = (
+    g:
+      | FractalCurveGenerator
+      | ((prev: FractalCurveGenerator) => FractalCurveGenerator)
+  ) => {
+    setState(
+      typeof g === "function"
+        ? (s) => ({ ...s, generator: g(s.generator) })
+        : { ...state, generator: g }
+    );
+  };
 
   const maxIterations = maxIterationsFromMaxPoints(maxPoints, generator);
 
-  const iterations = Math.min(iterations0, maxIterations);
+  const iterations = Math.min(state.iterations, maxIterations);
+  const setIterations = (i: number) => {
+    setState({ ...state, iterations: i });
+  };
+
+  const fillMode = state.fillMode;
+  const setFillMode = (f: boolean) => {
+    setState({ ...state, fillMode: f });
+  };
 
   const points = useMemo(
     () => generateFractalCurve(generator, iterations),
