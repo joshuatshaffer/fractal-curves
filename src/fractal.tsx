@@ -1,3 +1,5 @@
+import { pipeline } from "./pipeline";
+
 export interface Point {
   x: number;
   y: number;
@@ -92,16 +94,17 @@ export function generateFractalCurve(
       const scaleFactor = mag / base.mag;
       const rotation = angle - base.angle;
 
-      let movedPoints = points.map((p) =>
-        translate(rotate(scale(p, scaleFactor), rotation), from)
-      );
-
-      movedPoints = reversed ? movedPoints.reverse() : movedPoints;
-
-      movedPoints = i === 0 ? movedPoints : movedPoints.slice(1);
-
-      return movedPoints;
+      return pipeline(
+        points.map((p) =>
+          pipeline(p)
+            .then((p) => scale(p, scaleFactor))
+            .then((p) => rotate(p, rotation))
+            .then((p) => translate(p, from))
+            .done()
+        )
+      )
+        .then((movedPoints) => (reversed ? movedPoints.reverse() : movedPoints))
+        .then((movedPoints) => (i === 0 ? movedPoints : movedPoints.slice(1)))
+        .done();
     });
-
-  throw new Error("Not implemented");
 }
