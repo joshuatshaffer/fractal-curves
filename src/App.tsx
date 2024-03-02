@@ -129,6 +129,7 @@ export function App() {
                   setIterations(Number(e.target.value));
                 }}
               />
+              <br />
               <input
                 id="iterations-slider"
                 type="range"
@@ -139,6 +140,7 @@ export function App() {
                 onChange={(e) => {
                   setIterations(Number(e.target.value));
                 }}
+                style={{ width: "100%" }}
               />
             </div>
             <div>
