@@ -32,6 +32,6 @@ export const pointsAtom = atom((get) =>
 );
 
 export const viewSettingsAtom: PrimitiveAtom<ViewSettings> = atom({
-  scale: 10,
-  translate: { x: 10, y: 250 },
+  scale: 1,
+  translate: { x: 0, y: 0 },
 });

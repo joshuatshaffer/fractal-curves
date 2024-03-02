@@ -1,4 +1,5 @@
-import { createContext, useContext } from "react";
+import { useAtomValue } from "jotai";
+import { viewSettingsAtom } from "./atoms";
 import { Point, scale, translate } from "./fractal";
 
 export interface ViewSettings {
@@ -10,18 +11,11 @@ export function pointToSvg(v: ViewSettings, p: Point): Point {
   return translate(scale(p, v.scale), v.translate);
 }
 
-const ViewSettingsContext = createContext<ViewSettings>({
-  scale: 1,
-  translate: { x: 0, y: 0 },
-});
-
-export const ViewSettingsContextProvider = ViewSettingsContext.Provider;
-
 export function usePointToSvg() {
   const v = useViewSettings();
   return (p: Point) => pointToSvg(v, p);
 }
 
 export function useViewSettings() {
-  return useContext(ViewSettingsContext);
+  return useAtomValue(viewSettingsAtom);
 }

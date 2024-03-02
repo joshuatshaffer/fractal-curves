@@ -23,7 +23,6 @@ import {
   translate,
 } from "./fractal";
 import { onDrag } from "./onDrag";
-import { ViewSettingsContextProvider } from "./viewSpace";
 
 const dragonGenerator: FractalCurveGenerator = [
   {
@@ -152,59 +151,57 @@ export function App() {
 
   return (
     <>
-      <ViewSettingsContextProvider value={viewSettings}>
-        <svg
-          ref={setSvgElement}
-          className={styles.view}
-          {...onDrag((event) => {
-            const start = eventXY(event);
-            return {
-              onDragMove: (event) => {
-                const current = eventXY(event);
-                const dx = current.x - start.x;
-                const dy = current.y - start.y;
+      <svg
+        ref={setSvgElement}
+        className={styles.view}
+        {...onDrag((event) => {
+          const start = eventXY(event);
+          return {
+            onDragMove: (event) => {
+              const current = eventXY(event);
+              const dx = current.x - start.x;
+              const dy = current.y - start.y;
 
-                setViewSettings({
-                  ...viewSettings,
-                  translate: {
-                    x: viewSettings.translate.x + dx,
-                    y: viewSettings.translate.y + dy,
-                  },
-                });
-              },
-            };
-          })}
-        >
-          <defs>
-            <ArrowMarker />
-          </defs>
-          <Path points={points} fillMode={fillMode} />
+              setViewSettings({
+                ...viewSettings,
+                translate: {
+                  x: viewSettings.translate.x + dx,
+                  y: viewSettings.translate.y + dy,
+                },
+              });
+            },
+          };
+        })}
+      >
+        <defs>
+          <ArrowMarker />
+        </defs>
+        <Path points={points} fillMode={fillMode} />
 
-          <g className={styles.controls}>
-            <Arrow {...getBaseLine(generator)} color="#ff0000" />
-            {getLines(generator).map(({ from, to }, i) => (
-              <Arrow key={i} from={from} to={to} color="#0000ff" />
-            ))}
+        <g className={styles.controls}>
+          <Arrow {...getBaseLine(generator)} color="#ff0000" />
+          {getLines(generator).map(({ from, to }, i) => (
+            <Arrow key={i} from={from} to={to} color="#0000ff" />
+          ))}
+          <ControlPoint
+            generator={generator}
+            setGenerator={setGenerator}
+            viewSettings={viewSettings}
+            setViewSettings={setViewSettings}
+            index={-1}
+          />
+          {generator.map((_, i) => (
             <ControlPoint
+              key={i}
               generator={generator}
               setGenerator={setGenerator}
               viewSettings={viewSettings}
               setViewSettings={setViewSettings}
-              index={-1}
+              index={i}
             />
-            {generator.map((_, i) => (
-              <ControlPoint
-                key={i}
-                generator={generator}
-                setGenerator={setGenerator}
-                viewSettings={viewSettings}
-                setViewSettings={setViewSettings}
-                index={i}
-              />
-            ))}
-          </g>
-        </svg>
-      </ViewSettingsContextProvider>
+          ))}
+        </g>
+      </svg>
       <div className={styles.settingsContainer}>
         <details>
           <summary>Settings</summary>
