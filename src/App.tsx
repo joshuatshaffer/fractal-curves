@@ -16,65 +16,9 @@ import {
   viewSettingsAtom,
 } from "./atoms/atoms";
 import { eventXY } from "./eventXY";
-import {
-  FractalCurveGenerator,
-  getBaseLine,
-  getLines,
-  scale,
-  translate,
-} from "./fractal";
+import { dragon, snowflakeSweep } from "./exampleFractalCurves";
+import { getBaseLine, getLines, scale, translate } from "./fractal";
 import { onDrag } from "./onDrag";
-
-const dragonGenerator: FractalCurveGenerator = [
-  {
-    reversed: true,
-    x: 10,
-    y: 0,
-  },
-  {
-    reversed: false,
-    x: 10,
-    y: 10,
-  },
-];
-
-function triLattice(x: number, y: number) {
-  return {
-    x: (x + y / 2) * 10,
-    y: -y * (Math.sqrt(3) / 2) * 10,
-  };
-}
-
-const snowflakeSweepGenerator: FractalCurveGenerator = [
-  {
-    ...triLattice(0, 1),
-    reversed: true,
-  },
-  {
-    ...triLattice(0, 2),
-    reversed: false,
-  },
-  {
-    ...triLattice(1, 2),
-    reversed: false,
-  },
-  {
-    ...triLattice(2, 1),
-    reversed: false,
-  },
-  {
-    ...triLattice(1, 0),
-    reversed: true,
-  },
-  {
-    ...triLattice(2, 0),
-    reversed: true,
-  },
-  {
-    ...triLattice(3, 0),
-    reversed: false,
-  },
-];
 
 export function App() {
   const [generator, setGenerator] = useAtom(generatorAtom);
@@ -291,22 +235,17 @@ export function App() {
         <details>
           <summary>Examples</summary>
           <div>
-            <button
-              type="button"
-              onClick={() => {
-                loadGenerator(dragonGenerator);
-              }}
-            >
-              Dragon
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                loadGenerator(snowflakeSweepGenerator);
-              }}
-            >
-              Snowflake Sweep
-            </button>
+            {[dragon, snowflakeSweep].map((example) => (
+              <button
+                key={example.name}
+                type="button"
+                onClick={() => {
+                  loadGenerator(example.generator);
+                }}
+              >
+                {example.name}
+              </button>
+            ))}
           </div>
         </details>
       </div>

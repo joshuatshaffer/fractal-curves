@@ -1,5 +1,6 @@
 import { PrimitiveAtom, atom } from "jotai";
 import { atomEffect } from "jotai-effect";
+import { dragon } from "../exampleFractalCurves";
 import { FractalCurveGenerator } from "../fractal";
 
 export interface HashState {
@@ -23,18 +24,7 @@ const internalHashStateAtom: PrimitiveAtom<HashState> = atom(
     return {
       iterations: 4,
       fillMode: false,
-      generator: [
-        {
-          reversed: true,
-          x: 10,
-          y: 0,
-        },
-        {
-          reversed: false,
-          x: 10,
-          y: 10,
-        },
-      ],
+      generator: dragon.generator,
     };
   })()
 );
