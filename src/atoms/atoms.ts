@@ -1,4 +1,5 @@
 import { PrimitiveAtom, atom } from "jotai";
+import { atomEffect } from "jotai-effect";
 import { focusAtom } from "jotai-optics";
 import {
   FractalCurveGenerator,
@@ -21,11 +22,65 @@ export const maxIterationsAtom = atom((get) =>
   maxIterationsFromMaxPoints(maxPoints, get(generatorAtom))
 );
 
+type IterationsAnimationState =
+  | { state: "stopped" }
+  | { state: "running"; startTime: number; totalTime: number };
+
+export const iterationsAnimationAtom = (() => {
+  const a = atom<IterationsAnimationState>({
+    state: "stopped",
+  });
+
+  return atom(
+    (get) => get(a),
+    (_get, set, update: IterationsAnimationState["state"]) =>
+      set(
+        a,
+        update === "running"
+          ? { state: "running", startTime: performance.now(), totalTime: 1000 }
+          : { state: "stopped" }
+      )
+  );
+})();
+
 export const iterationsAtom: PrimitiveAtom<number> = (() => {
   const a = focusAtom(hashStateAtom, (optic) => optic.path("iterations"));
 
+  const iterationsAnimationEffectAtom = atomEffect((get, set) => {
+    console.log("iterationsAnimationEffectAtom");
+    const update: FrameRequestCallback = (now) => {
+      const state = get(iterationsAnimationAtom);
+      if (state.state === "stopped") {
+        return;
+      }
+
+      const elapsed = now - state.startTime;
+      if (elapsed > state.totalTime) {
+        set(iterationsAtom, get(maxIterationsAtom));
+        set(iterationsAnimationAtom, "stopped");
+        return;
+      }
+      set(iterationsAtom, (elapsed / state.totalTime) * get(maxIterationsAtom));
+      rafId = requestAnimationFrame(update);
+    };
+
+    const state = get(iterationsAnimationAtom);
+    if (state.state === "stopped") {
+      return;
+    }
+
+    let rafId = requestAnimationFrame(update);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+    };
+  });
+
   return atom(
-    (get) => Math.min(get(maxIterationsAtom), get(a)),
+    (get) => {
+      get(iterationsAnimationEffectAtom);
+      return Math.min(get(maxIterationsAtom), get(a));
+    },
     (_get, set, update) => set(a, update)
   );
 })();
