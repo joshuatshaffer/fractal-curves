@@ -66,7 +66,7 @@ export function App() {
 
   const loadGenerator = useSetAtom(loadGeneratorAtom);
 
-  const [iterationsAnimationState, setIterationsAnimationState] = useAtom(
+  const [iterationsAnimation, setIterationsAnimation] = useAtom(
     iterationsAnimationAtom
   );
 
@@ -164,9 +164,9 @@ export function App() {
               <input
                 id="animate-checkbox"
                 type="checkbox"
-                checked={iterationsAnimationState.state === "running"}
+                checked={iterationsAnimation === "running"}
                 onChange={(e) => {
-                  setIterationsAnimationState(
+                  setIterationsAnimation(
                     e.target.checked ? "running" : "stopped"
                   );
                 }}

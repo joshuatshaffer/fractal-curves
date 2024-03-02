@@ -63,7 +63,9 @@ export function generateFractalCurve(
   iterations: number
 ): Point[] {
   if (iterations < 0 || !Number.isFinite(iterations)) {
-    throw new Error("Iterations must be a non-negative number");
+    console.error("Iterations must be a non-negative number");
+    // Be fault tolerant and use 0 iterations.
+    return generateFractalCurve(generator, 0);
   }
 
   if (iterations === 0) {

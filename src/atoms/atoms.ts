@@ -1,5 +1,4 @@
 import { PrimitiveAtom, atom } from "jotai";
-import { atomEffect } from "jotai-effect";
 import { focusAtom } from "jotai-optics";
 import {
   FractalCurveGenerator,
@@ -23,67 +22,80 @@ export const maxIterationsAtom = atom((get) =>
 );
 
 type IterationsAnimationState =
-  | { state: "stopped" }
-  | { state: "running"; startTime: number; totalTime: number };
+  | { status: "stopped" }
+  | {
+      status: "running";
+      startTime: number;
+      totalTime: number;
+      animationFrameId: number;
+    };
+
+const internalIterationsAtom = focusAtom(hashStateAtom, (optic) =>
+  optic.path("iterations")
+);
 
 export const iterationsAnimationAtom = (() => {
   const a = atom<IterationsAnimationState>({
-    state: "stopped",
+    status: "stopped",
   });
 
   return atom(
-    (get) => get(a),
-    (_get, set, update: IterationsAnimationState["state"]) =>
-      set(
-        a,
-        update === "running"
-          ? { state: "running", startTime: performance.now(), totalTime: 1000 }
-          : { state: "stopped" }
-      )
-  );
-})();
+    (get) => get(a).status,
+    (get, set, newStatus: IterationsAnimationState["status"]) => {
+      const update: FrameRequestCallback = (now) => {
+        const state = get(a);
 
-export const iterationsAtom: PrimitiveAtom<number> = (() => {
-  const a = focusAtom(hashStateAtom, (optic) => optic.path("iterations"));
+        if (state.status === "stopped") {
+          return;
+        }
 
-  const iterationsAnimationEffectAtom = atomEffect((get, set) => {
-    console.log("iterationsAnimationEffectAtom");
-    const update: FrameRequestCallback = (now) => {
-      const state = get(iterationsAnimationAtom);
-      if (state.state === "stopped") {
-        return;
-      }
+        const elapsed = now - state.startTime;
+        if (elapsed > state.totalTime) {
+          set(internalIterationsAtom, get(maxIterationsAtom));
+          set(a, { status: "stopped" });
+          return;
+        }
+        set(
+          internalIterationsAtom,
+          Math.max(0, (elapsed / state.totalTime) * get(maxIterationsAtom))
+        );
+        set(a, {
+          ...state,
+          animationFrameId: requestAnimationFrame(update),
+        });
+      };
 
-      const elapsed = now - state.startTime;
-      if (elapsed > state.totalTime) {
-        set(iterationsAtom, get(maxIterationsAtom));
-        set(iterationsAnimationAtom, "stopped");
-        return;
-      }
-      set(iterationsAtom, (elapsed / state.totalTime) * get(maxIterationsAtom));
-      rafId = requestAnimationFrame(update);
-    };
-
-    const state = get(iterationsAnimationAtom);
-    if (state.state === "stopped") {
-      return;
+      set(a, (prevState) => {
+        if (newStatus === "running") {
+          if (prevState.status === "running") {
+            return prevState;
+          }
+          return {
+            status: "running",
+            startTime: performance.now(),
+            totalTime: 1000,
+            animationFrameId: requestAnimationFrame(update),
+          };
+        } else {
+          if (prevState.status === "running") {
+            cancelAnimationFrame(prevState.animationFrameId);
+          }
+          return { status: "stopped" };
+        }
+      });
     }
-
-    let rafId = requestAnimationFrame(update);
-
-    return () => {
-      cancelAnimationFrame(rafId);
-    };
-  });
-
-  return atom(
-    (get) => {
-      get(iterationsAnimationEffectAtom);
-      return Math.min(get(maxIterationsAtom), get(a));
-    },
-    (_get, set, update) => set(a, update)
   );
 })();
+
+export const iterationsAtom: PrimitiveAtom<number> = atom(
+  (get) => Math.min(get(maxIterationsAtom), get(internalIterationsAtom)),
+  (_get, set, update) => {
+    // Stop the animation when a user manually changes the iterations.
+    set(iterationsAnimationAtom, "stopped");
+
+    set(internalIterationsAtom, update);
+  }
+);
 
 export const fillModeAtom = focusAtom(hashStateAtom, (optic) =>
   optic.prop("fillMode")
@@ -141,9 +153,9 @@ export const normalizeViewAtom = atom(null, (get, set) => {
 
 export const loadGeneratorAtom = atom(
   null,
-  (get, set, generator: FractalCurveGenerator) => {
+  (_get, set, generator: FractalCurveGenerator) => {
     set(generatorAtom, generator);
-    set(iterationsAtom, get(maxIterationsAtom));
     set(normalizeViewAtom);
+    set(iterationsAnimationAtom, "running");
   }
 );
