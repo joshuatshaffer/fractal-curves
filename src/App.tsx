@@ -1,20 +1,28 @@
-import { useEffect, useMemo, useState } from "react";
+import { useAtom, useAtomValue } from "jotai";
+import { useAtomCallback } from "jotai/utils";
+import { useEffect, useState } from "react";
 import styles from "./App.module.scss";
 import { Arrow, ArrowMarker } from "./Arrow";
 import { ControlPoint } from "./ControlPoint";
 import { Path } from "./Path";
+import {
+  fillModeAtom,
+  generatorAtom,
+  iterationsAtom,
+  maxIterationsAtom,
+  pointsAtom,
+  viewSettingsAtom,
+} from "./atoms";
 import { eventXY } from "./eventXY";
 import {
   FractalCurveGenerator,
   generateFractalCurve,
   getBaseLine,
   getLines,
-  maxIterationsFromMaxPoints,
   scale,
   translate,
 } from "./fractal";
 import { onDrag } from "./onDrag";
-import { useHashState } from "./useHashState";
 import { ViewSettingsContextProvider } from "./viewSpace";
 
 const dragonGenerator: FractalCurveGenerator = [
@@ -68,56 +76,17 @@ const snowflakeSweepGenerator: FractalCurveGenerator = [
   },
 ];
 
-/**
- * Limit the number of points drawn to avoid crashing the browser.
- */
-const maxPoints = 10_000;
-
 export function App() {
-  const [state, setState] = useHashState<{
-    iterations: number;
-    fillMode: boolean;
-    generator: FractalCurveGenerator;
-  }>({
-    iterations: 4,
-    fillMode: false,
-    generator: snowflakeSweepGenerator,
-  });
+  const [generator, setGenerator] = useAtom(generatorAtom);
 
-  const generator = state.generator;
-  const setGenerator = (
-    g:
-      | FractalCurveGenerator
-      | ((prev: FractalCurveGenerator) => FractalCurveGenerator)
-  ) => {
-    setState(
-      typeof g === "function"
-        ? (s) => ({ ...s, generator: g(s.generator) })
-        : { ...state, generator: g }
-    );
-  };
+  const [iterations, setIterations] = useAtom(iterationsAtom);
+  const maxIterations = useAtomValue(maxIterationsAtom);
 
-  const maxIterations = maxIterationsFromMaxPoints(maxPoints, generator);
+  const [fillMode, setFillMode] = useAtom(fillModeAtom);
 
-  const iterations = Math.min(state.iterations, maxIterations);
-  const setIterations = (i: number) => {
-    setState({ ...state, iterations: i });
-  };
+  const points = useAtomValue(pointsAtom);
 
-  const fillMode = state.fillMode;
-  const setFillMode = (f: boolean) => {
-    setState({ ...state, fillMode: f });
-  };
-
-  const points = useMemo(
-    () => generateFractalCurve(generator, iterations),
-    [generator, iterations]
-  );
-
-  const [viewSettings, setViewSettings] = useState({
-    scale: 10,
-    translate: { x: 10, y: 250 },
-  });
+  const [viewSettings, setViewSettings] = useAtom(viewSettingsAtom);
 
   const [svgElement, setSvgElement] = useState<SVGSVGElement | null>(null);
 
@@ -141,9 +110,9 @@ export function App() {
     return () => {
       svgElement.removeEventListener("wheel", listener);
     };
-  }, [svgElement]);
+  }, [setViewSettings, svgElement]);
 
-  const normalizeView = () => {
+  const normalizeView = useAtomCallback((get, set) => {
     if (!svgElement) {
       return;
     }
@@ -154,7 +123,10 @@ export function App() {
     let minY = Infinity;
     let maxY = -Infinity;
 
-    for (const p of generateFractalCurve(generator, maxIterations)) {
+    for (const p of generateFractalCurve(
+      get(generatorAtom),
+      get(maxIterationsAtom)
+    )) {
       minX = Math.min(minX, p.x);
       maxX = Math.max(maxX, p.x);
       minY = Math.min(minY, p.y);
@@ -169,14 +141,14 @@ export function App() {
       (svgElement.clientHeight - 20) / dy
     );
 
-    setViewSettings({
+    set(viewSettingsAtom, {
       scale: scale,
       translate: {
         x: (svgElement.clientWidth - (maxX + minX) * scale) / 2,
         y: (svgElement.clientHeight - (maxY + minY) * scale) / 2,
       },
     });
-  };
+  });
 
   return (
     <>
