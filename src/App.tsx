@@ -1,6 +1,5 @@
-import { useAtom, useAtomValue } from "jotai";
-import { useAtomCallback } from "jotai/utils";
-import { useEffect, useState } from "react";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useEffect } from "react";
 import styles from "./App.module.scss";
 import { Arrow, ArrowMarker } from "./Arrow";
 import { ControlPoint } from "./ControlPoint";
@@ -9,14 +8,16 @@ import {
   fillModeAtom,
   generatorAtom,
   iterationsAtom,
+  loadGeneratorAtom,
   maxIterationsAtom,
+  normalizeViewAtom,
   pointsAtom,
+  svgElementAtom,
   viewSettingsAtom,
 } from "./atoms";
 import { eventXY } from "./eventXY";
 import {
   FractalCurveGenerator,
-  generateFractalCurve,
   getBaseLine,
   getLines,
   scale,
@@ -87,7 +88,7 @@ export function App() {
 
   const [viewSettings, setViewSettings] = useAtom(viewSettingsAtom);
 
-  const [svgElement, setSvgElement] = useState<SVGSVGElement | null>(null);
+  const [svgElement, setSvgElement] = useAtom(svgElementAtom);
 
   useEffect(() => {
     if (!svgElement) {
@@ -111,43 +112,14 @@ export function App() {
     };
   }, [setViewSettings, svgElement]);
 
-  const normalizeView = useAtomCallback((get, set) => {
-    if (!svgElement) {
-      return;
-    }
+  const normalizeView = useSetAtom(normalizeViewAtom);
 
-    let minX = Infinity;
-    let maxX = -Infinity;
+  // Normalize view on page load.
+  useEffect(() => {
+    normalizeView();
+  }, [normalizeView]);
 
-    let minY = Infinity;
-    let maxY = -Infinity;
-
-    for (const p of generateFractalCurve(
-      get(generatorAtom),
-      get(maxIterationsAtom)
-    )) {
-      minX = Math.min(minX, p.x);
-      maxX = Math.max(maxX, p.x);
-      minY = Math.min(minY, p.y);
-      maxY = Math.max(maxY, p.y);
-    }
-
-    const dx = maxX - minX;
-    const dy = maxY - minY;
-
-    const scale = Math.min(
-      (svgElement.clientWidth - 20) / dx,
-      (svgElement.clientHeight - 20) / dy
-    );
-
-    set(viewSettingsAtom, {
-      scale: scale,
-      translate: {
-        x: (svgElement.clientWidth - (maxX + minX) * scale) / 2,
-        y: (svgElement.clientHeight - (maxY + minY) * scale) / 2,
-      },
-    });
-  });
+  const loadGenerator = useSetAtom(loadGeneratorAtom);
 
   return (
     <>
@@ -335,8 +307,7 @@ export function App() {
             <button
               type="button"
               onClick={() => {
-                setGenerator(dragonGenerator);
-                normalizeView();
+                loadGenerator(dragonGenerator);
               }}
             >
               Dragon
@@ -344,8 +315,7 @@ export function App() {
             <button
               type="button"
               onClick={() => {
-                setGenerator(snowflakeSweepGenerator);
-                normalizeView();
+                loadGenerator(snowflakeSweepGenerator);
               }}
             >
               Snowflake Sweep

@@ -1,6 +1,10 @@
-import { PrimitiveAtom, atom } from "jotai";
+import { atom } from "jotai";
 import { focusAtom } from "jotai-optics";
-import { generateFractalCurve, maxIterationsFromMaxPoints } from "./fractal";
+import {
+  FractalCurveGenerator,
+  generateFractalCurve,
+  maxIterationsFromMaxPoints,
+} from "./fractal";
 import { hashStateAtom } from "./hashState";
 import { ViewSettings } from "./viewSpace";
 
@@ -31,7 +35,57 @@ export const pointsAtom = atom((get) =>
   generateFractalCurve(get(hashStateAtom).generator, get(iterationsAtom))
 );
 
-export const viewSettingsAtom: PrimitiveAtom<ViewSettings> = atom({
+export const viewSettingsAtom = atom<ViewSettings>({
   scale: 1,
   translate: { x: 0, y: 0 },
 });
+
+export const svgElementAtom = atom<SVGSVGElement | null>(null);
+
+export const normalizeViewAtom = atom(null, (get, set) => {
+  const svgElement = get(svgElementAtom);
+  if (!svgElement) {
+    return;
+  }
+
+  let minX = Infinity;
+  let maxX = -Infinity;
+
+  let minY = Infinity;
+  let maxY = -Infinity;
+
+  for (const p of generateFractalCurve(
+    get(generatorAtom),
+    get(maxIterationsAtom)
+  )) {
+    minX = Math.min(minX, p.x);
+    maxX = Math.max(maxX, p.x);
+    minY = Math.min(minY, p.y);
+    maxY = Math.max(maxY, p.y);
+  }
+
+  const dx = maxX - minX;
+  const dy = maxY - minY;
+
+  const scale = Math.min(
+    (svgElement.clientWidth - 20) / dx,
+    (svgElement.clientHeight - 20) / dy
+  );
+
+  set(viewSettingsAtom, {
+    scale: scale,
+    translate: {
+      x: (svgElement.clientWidth - (maxX + minX) * scale) / 2,
+      y: (svgElement.clientHeight - (maxY + minY) * scale) / 2,
+    },
+  });
+});
+
+export const loadGeneratorAtom = atom(
+  null,
+  (get, set, generator: FractalCurveGenerator) => {
+    set(generatorAtom, generator);
+    set(iterationsAtom, get(maxIterationsAtom));
+    set(normalizeViewAtom);
+  }
+);
