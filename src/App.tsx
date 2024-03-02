@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import styles from "./App.module.scss";
 import { Arrow, ArrowMarker } from "./Arrow";
 import { ControlPoint } from "./ControlPoint";
@@ -78,6 +78,30 @@ export function App() {
     scale: 10,
     translate: { x: 10, y: 250 },
   });
+
+  const [svgElement, setSvgElement] = useState<SVGSVGElement | null>(null);
+
+  useEffect(() => {
+    if (!svgElement) {
+      return;
+    }
+
+    const listener = (event: WheelEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      // TODO: Stay centered on the mouse position.
+      setViewSettings((prev) => ({
+        ...prev,
+        scale: prev.scale * 2 ** (event.deltaY * 0.01),
+      }));
+    };
+
+    svgElement.addEventListener("wheel", listener);
+    return () => {
+      svgElement.removeEventListener("wheel", listener);
+    };
+  }, [svgElement]);
 
   return (
     <>
@@ -196,6 +220,7 @@ export function App() {
       </div>
       <ViewSettingsContextProvider value={viewSettings}>
         <svg
+          ref={setSvgElement}
           className={styles.view}
           style={{ width: "100%", height: "100vh", touchAction: "none" }}
           {...onDrag((event) => {
