@@ -1,3 +1,4 @@
+import style from "./ControlPoint.module.scss";
 import { eventXY } from "./eventXY";
 import { FractalCurveGenerator } from "./fractal";
 import { onDrag } from "./onDrag";
@@ -20,7 +21,7 @@ export function ControlPoint({
 
   return (
     <circle
-      style={{ touchAction: "none" }}
+      className={style.controlPoint}
       {...onDrag((e) => {
         const start = eventXY(e);
         return {
