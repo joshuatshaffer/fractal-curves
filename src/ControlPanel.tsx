@@ -9,7 +9,12 @@ import {
   maxIterationsAtom,
   normalizeViewAtom,
 } from "./atoms/atoms";
-import { dragon, snowflakeSweep } from "./exampleFractalCurves";
+import {
+  dragon,
+  gosperCurve,
+  sierpinskiArrowhead,
+  snowflakeSweep,
+} from "./exampleFractalCurves";
 
 export function ControlPanel() {
   const [iterations, setIterations] = useAtom(iterationsAtom);
@@ -94,17 +99,19 @@ export function ControlPanel() {
       <details>
         <summary>Examples</summary>
         <div>
-          {[dragon, snowflakeSweep].map((example) => (
-            <button
-              key={example.name}
-              type="button"
-              onClick={() => {
-                loadGenerator(example.generator);
-              }}
-            >
-              {example.name}
-            </button>
-          ))}
+          {[dragon, snowflakeSweep, gosperCurve, sierpinskiArrowhead].map(
+            (example) => (
+              <button
+                key={example.name}
+                type="button"
+                onClick={() => {
+                  loadGenerator(example.generator);
+                }}
+              >
+                {example.name}
+              </button>
+            )
+          )}
         </div>
       </details>
     </div>
