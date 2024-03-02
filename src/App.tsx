@@ -143,6 +143,41 @@ export function App() {
     };
   }, [svgElement]);
 
+  const normalizeView = () => {
+    if (!svgElement) {
+      return;
+    }
+
+    let minX = Infinity;
+    let maxX = -Infinity;
+
+    let minY = Infinity;
+    let maxY = -Infinity;
+
+    for (const p of generateFractalCurve(generator, maxIterations)) {
+      minX = Math.min(minX, p.x);
+      maxX = Math.max(maxX, p.x);
+      minY = Math.min(minY, p.y);
+      maxY = Math.max(maxY, p.y);
+    }
+
+    const dx = maxX - minX;
+    const dy = maxY - minY;
+
+    const scale = Math.min(
+      (svgElement.clientWidth - 20) / dx,
+      (svgElement.clientHeight - 20) / dy
+    );
+
+    setViewSettings({
+      scale: scale,
+      translate: {
+        x: (svgElement.clientWidth - (maxX + minX) * scale) / 2,
+        y: (svgElement.clientHeight - (maxY + minY) * scale) / 2,
+      },
+    });
+  };
+
   return (
     <>
       <ViewSettingsContextProvider value={viewSettings}>
@@ -202,6 +237,14 @@ export function App() {
         <details>
           <summary>Settings</summary>
           <div>
+            <button
+              type="button"
+              onClick={() => {
+                normalizeView();
+              }}
+            >
+              Fit curve in view
+            </button>
             <div>
               <label htmlFor="iterations-input">Iterations </label>
               <input
