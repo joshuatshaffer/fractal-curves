@@ -367,6 +367,7 @@ export function App() {
               type="button"
               onClick={() => {
                 setGenerator(dragonGenerator);
+                normalizeView();
               }}
             >
               Dragon
@@ -375,6 +376,7 @@ export function App() {
               type="button"
               onClick={() => {
                 setGenerator(snowflakeSweepGenerator);
+                normalizeView();
               }}
             >
               Snowflake Sweep
