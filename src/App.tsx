@@ -155,22 +155,9 @@ export function App() {
           {getLines(generator).map(({ from, to }, i) => (
             <Arrow key={i} from={from} to={to} color="#0000ff" />
           ))}
-          <ControlPoint
-            generator={generator}
-            setGenerator={setGenerator}
-            viewSettings={viewSettings}
-            setViewSettings={setViewSettings}
-            index={-1}
-          />
+          <ControlPoint index={-1} />
           {generator.map((_, i) => (
-            <ControlPoint
-              key={i}
-              generator={generator}
-              setGenerator={setGenerator}
-              viewSettings={viewSettings}
-              setViewSettings={setViewSettings}
-              index={i}
-            />
+            <ControlPoint key={i} index={i} />
           ))}
         </g>
       </svg>

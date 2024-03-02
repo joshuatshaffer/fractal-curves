@@ -1,22 +1,14 @@
+import { useAtom } from "jotai";
 import style from "./ControlPoint.module.scss";
+import { generatorAtom, viewSettingsAtom } from "./atoms";
 import { eventXY } from "./eventXY";
-import { FractalCurveGenerator } from "./fractal";
 import { onDrag } from "./onDrag";
-import { ViewSettings, pointToSvg } from "./viewSpace";
+import { pointToSvg } from "./viewSpace";
 
-export function ControlPoint({
-  index,
-  generator,
-  setGenerator,
-  viewSettings,
-  setViewSettings,
-}: {
-  index: number;
-  generator: FractalCurveGenerator;
-  setGenerator: (generator: FractalCurveGenerator) => void;
-  viewSettings: ViewSettings;
-  setViewSettings: (viewSettings: ViewSettings) => void;
-}) {
+export function ControlPoint({ index }: { index: number }) {
+  const [generator, setGenerator] = useAtom(generatorAtom);
+  const [viewSettings, setViewSettings] = useAtom(viewSettingsAtom);
+
   const point = pointToSvg(viewSettings, generator[index] ?? { x: 0, y: 0 });
 
   return (
