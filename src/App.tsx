@@ -317,6 +317,27 @@ export function App() {
             </div>
           </div>
         </details>
+        <details>
+          <summary>Examples</summary>
+          <div>
+            <button
+              type="button"
+              onClick={() => {
+                setGenerator(dragonGenerator);
+              }}
+            >
+              Dragon
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setGenerator(snowflakeSweepGenerator);
+              }}
+            >
+              Snowflake Sweep
+            </button>
+          </div>
+        </details>
       </div>
     </>
   );
