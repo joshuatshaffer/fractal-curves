@@ -1,5 +1,6 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useEffect } from "react";
+import { useAtomCallback } from "jotai/utils";
+import { useEffect, useState } from "react";
 import styles from "./App.module.scss";
 import { Arrow, ArrowMarker } from "./Arrow";
 import { ControlPoint } from "./ControlPoint";
@@ -64,6 +65,27 @@ export function App() {
   }, [normalizeView]);
 
   const loadGenerator = useSetAtom(loadGeneratorAtom);
+
+  const [animatingIterations, setAnimatingIterations] = useState(false);
+
+  const animateIterations = useAtomCallback((get, set) => {
+    let i = get(iterationsAtom);
+    i += 0.02;
+    if (i > maxIterations) {
+      i = 0;
+    }
+
+    set(iterationsAtom, i);
+  });
+
+  useEffect(() => {
+    if (animatingIterations) {
+      const interval = setInterval(() => {
+        animateIterations();
+      }, 1000 / 60);
+      return () => clearInterval(interval);
+    }
+  }, [animateIterations, animatingIterations]);
 
   return (
     <>
@@ -151,6 +173,17 @@ export function App() {
                 checked={fillMode}
                 onChange={(e) => {
                   setFillMode(e.target.checked);
+                }}
+              />
+            </div>
+            <div>
+              <label htmlFor="animate-checkbox">Animate </label>
+              <input
+                id="animate-checkbox"
+                type="checkbox"
+                checked={animatingIterations}
+                onChange={(e) => {
+                  setAnimatingIterations(e.target.checked);
                 }}
               />
             </div>

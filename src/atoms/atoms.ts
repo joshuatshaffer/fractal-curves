@@ -1,4 +1,4 @@
-import { atom } from "jotai";
+import { PrimitiveAtom, atom } from "jotai";
 import { focusAtom } from "jotai-optics";
 import {
   FractalCurveGenerator,
@@ -21,11 +21,14 @@ export const maxIterationsAtom = atom((get) =>
   maxIterationsFromMaxPoints(maxPoints, get(generatorAtom))
 );
 
-export const iterationsAtom = atom(
-  (get) => Math.min(get(maxIterationsAtom), get(hashStateAtom).iterations),
-  (get, set, iterations: number) =>
-    set(hashStateAtom, { ...get(hashStateAtom), iterations })
-);
+export const iterationsAtom: PrimitiveAtom<number> = (() => {
+  const a = focusAtom(hashStateAtom, (optic) => optic.path("iterations"));
+
+  return atom(
+    (get) => Math.min(get(maxIterationsAtom), get(a)),
+    (_get, set, update) => set(a, update)
+  );
+})();
 
 export const fillModeAtom = focusAtom(hashStateAtom, (optic) =>
   optic.prop("fillMode")
