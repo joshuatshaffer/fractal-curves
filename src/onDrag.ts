@@ -12,10 +12,12 @@ const endEvents = ["mouseup", "touchend"] as const;
  * Note: Any element that uses this hook must have `touch-action: none` set in CSS.
  */
 export function onDrag<T extends Element>(
-  onDragStart: (event: React.MouseEvent<T> | React.TouchEvent<T>) => {
-    onDragMove?: (event: MouseEvent | TouchEvent) => void;
-    onDragEnd?: (event: MouseEvent | TouchEvent) => void;
-  }
+  onDragStart: (event: React.MouseEvent<T> | React.TouchEvent<T>) =>
+    | {
+        onDragMove?: (event: MouseEvent | TouchEvent) => void;
+        onDragEnd?: (event: MouseEvent | TouchEvent) => void;
+      }
+    | undefined
 ) {
   const start = (event: React.MouseEvent<T> | React.TouchEvent<T>) => {
     if (window.getComputedStyle(event.currentTarget).touchAction !== "none") {
@@ -24,7 +26,7 @@ export function onDrag<T extends Element>(
       );
     }
 
-    const { onDragMove = noop, onDragEnd = noop } = onDragStart(event);
+    const { onDragMove = noop, onDragEnd = noop } = onDragStart(event) ?? {};
 
     const end = (event: MouseEvent | TouchEvent) => {
       onDragEnd(event);

@@ -1,8 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import styles from "./App.module.scss";
 import { Arrow, ArrowMarker } from "./Arrow";
 import { ControlPoint } from "./ControlPoint";
 import { Path } from "./Path";
+import { eventXY } from "./eventXY";
 import {
   FractalCurveGenerator,
   generateFractalCurve,
@@ -12,6 +13,7 @@ import {
   scale,
   translate,
 } from "./fractal";
+import { onDrag } from "./onDrag";
 import { useHashState } from "./useHashState";
 import { ViewSettingsContextProvider } from "./viewSpace";
 
@@ -71,6 +73,11 @@ export function App() {
     () => generateFractalCurve(generator, iterations),
     [generator, iterations]
   );
+
+  const [viewSettings, setViewSettings] = useState({
+    scale: 10,
+    translate: { x: 10, y: 250 },
+  });
 
   return (
     <>
@@ -187,27 +194,52 @@ export function App() {
           </div>
         ))}
       </div>
-      <ViewSettingsContextProvider
-        value={{ scale: 10, translate: { x: 10, y: 250 } }}
-      >
-        <svg className={styles.view} style={{ width: "100%", height: "100vh" }}>
+      <ViewSettingsContextProvider value={viewSettings}>
+        <svg
+          className={styles.view}
+          style={{ width: "100%", height: "100vh", touchAction: "none" }}
+          {...onDrag((event) => {
+            const start = eventXY(event);
+            return {
+              onDragMove: (event) => {
+                const current = eventXY(event);
+                const dx = current.x - start.x;
+                const dy = current.y - start.y;
+
+                setViewSettings({
+                  ...viewSettings,
+                  translate: {
+                    x: viewSettings.translate.x + dx,
+                    y: viewSettings.translate.y + dy,
+                  },
+                });
+              },
+            };
+          })}
+        >
           <defs>
             <ArrowMarker />
           </defs>
-
           <Arrow {...getBaseLine(generator)} color="#ff000055" />
-
           {getLines(generator).map(({ from, to }, i) => (
             <Arrow key={i} from={from} to={to} color="#0000ff55" />
           ))}
-
           <Path points={points} fillMode={fillMode} />
 
+          <ControlPoint
+            generator={generator}
+            setGenerator={setGenerator}
+            viewSettings={viewSettings}
+            setViewSettings={setViewSettings}
+            index={-1}
+          />
           {generator.map((_, i) => (
             <ControlPoint
               key={i}
               generator={generator}
               setGenerator={setGenerator}
+              viewSettings={viewSettings}
+              setViewSettings={setViewSettings}
               index={i}
             />
           ))}

@@ -1,12 +1,12 @@
 import { createContext, useContext } from "react";
 import { Point, scale, translate } from "./fractal";
 
-interface ViewSettings {
+export interface ViewSettings {
   scale: number;
   translate: Point;
 }
 
-function pointToSvg(v: ViewSettings, p: Point): Point {
+export function pointToSvg(v: ViewSettings, p: Point): Point {
   return translate(scale(p, v.scale), v.translate);
 }
 
