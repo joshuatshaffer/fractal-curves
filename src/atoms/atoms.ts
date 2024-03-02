@@ -4,9 +4,9 @@ import {
   FractalCurveGenerator,
   generateFractalCurve,
   maxIterationsFromMaxPoints,
-} from "./fractal";
+} from "../fractal";
+import { ViewSettings } from "../viewSpace";
 import { hashStateAtom } from "./hashState";
-import { ViewSettings } from "./viewSpace";
 
 /**
  * Limit the number of points drawn to avoid crashing the browser.

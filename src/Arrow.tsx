@@ -1,5 +1,7 @@
+import { useAtomValue } from "jotai";
+import { viewSettingsAtom } from "./atoms/atoms";
 import { Point } from "./fractal";
-import { usePointToSvg } from "./viewSpace";
+import { pointToSvg } from "./viewSpace";
 
 export function Arrow({
   from,
@@ -10,10 +12,10 @@ export function Arrow({
   to: Point;
   color?: string;
 }) {
-  const pointToSvg = usePointToSvg();
+  const viewSettings = useAtomValue(viewSettingsAtom);
 
-  const from0 = pointToSvg(from);
-  const to0 = pointToSvg(to);
+  const from0 = pointToSvg(viewSettings, from);
+  const to0 = pointToSvg(viewSettings, to);
 
   return (
     <line

@@ -1,6 +1,6 @@
 import { PrimitiveAtom, atom } from "jotai";
 import { atomEffect } from "jotai-effect";
-import { FractalCurveGenerator } from "./fractal";
+import { FractalCurveGenerator } from "../fractal";
 
 export interface HashState {
   iterations: number;

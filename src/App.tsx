@@ -14,7 +14,7 @@ import {
   pointsAtom,
   svgElementAtom,
   viewSettingsAtom,
-} from "./atoms";
+} from "./atoms/atoms";
 import { eventXY } from "./eventXY";
 import {
   FractalCurveGenerator,

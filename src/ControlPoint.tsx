@@ -1,6 +1,6 @@
 import { useAtom } from "jotai";
 import style from "./ControlPoint.module.scss";
-import { generatorAtom, viewSettingsAtom } from "./atoms";
+import { generatorAtom, viewSettingsAtom } from "./atoms/atoms";
 import { eventXY } from "./eventXY";
 import { onDrag } from "./onDrag";
 import { pointToSvg } from "./viewSpace";

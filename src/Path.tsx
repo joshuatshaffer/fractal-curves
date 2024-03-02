@@ -1,5 +1,7 @@
+import { useAtomValue } from "jotai";
+import { viewSettingsAtom } from "./atoms/atoms";
 import { Point } from "./fractal";
-import { usePointToSvg } from "./viewSpace";
+import { pointToSvg } from "./viewSpace";
 
 export function Path({
   points,
@@ -10,9 +12,9 @@ export function Path({
   fillMode: boolean;
   color?: string;
 }) {
-  const pointToSvg = usePointToSvg();
+  const viewSettings = useAtomValue(viewSettingsAtom);
 
-  const points0 = points.map((p) => pointToSvg(p));
+  const points0 = points.map((p) => pointToSvg(viewSettings, p));
 
   return (
     <path
