@@ -9,41 +9,66 @@ export interface HashState {
   generator: FractalCurveGenerator;
 }
 
-const internalHashStateAtom: PrimitiveAtom<HashState> = atom(
-  (() => {
-    const value = window.location.hash.slice(1);
+/**
+ * @returns `undefined` when there is an error parsing the hash state.
+ */
+function readStateFromUrl(): HashState | undefined {
+  const value = window.location.hash.slice(1);
 
-    if (value) {
-      try {
-        return JSON.parse(decodeURIComponent(value));
-      } catch (e) {
-        console.error("Unable to page URL hash state", e);
-      }
+  if (value) {
+    try {
+      return JSON.parse(decodeURIComponent(value));
+    } catch (error) {
+      console.error("Unable to parse URL hash state", error);
     }
+  }
+}
 
-    return {
+function writeStateToUrl(state: HashState) {
+  window.location.hash = encodeURIComponent(JSON.stringify(state));
+}
+
+const internalHashStateAtom: PrimitiveAtom<HashState> = atom(
+  (() =>
+    readStateFromUrl() ?? {
       iterations: 4,
       fillMode: false,
       generator: dragon.generator,
-    };
-  })()
+    })()
 );
 
-const hashStateUpdateEffectAtom = atomEffect((get) => {
+const debounceTime = 500;
+
+const hashStateWriteEffectAtom = atomEffect((get) => {
   const hashState = get(internalHashStateAtom);
 
   const timeout = setTimeout(() => {
-    window.location.hash = encodeURIComponent(JSON.stringify(hashState));
-  }, 500);
+    writeStateToUrl(hashState);
+  }, debounceTime);
 
   return () => {
     clearTimeout(timeout);
   };
 });
 
+const hashStateReadEffectAtom = atomEffect((_get, set) => {
+  const listener = () => {
+    const s = readStateFromUrl();
+    if (s !== undefined) {
+      set(internalHashStateAtom, s);
+    }
+  };
+
+  window.addEventListener("popstate", listener);
+  return () => {
+    window.removeEventListener("popstate", listener);
+  };
+});
+
 export const hashStateAtom: PrimitiveAtom<HashState> = atom(
   (get) => {
-    get(hashStateUpdateEffectAtom);
+    get(hashStateWriteEffectAtom);
+    get(hashStateReadEffectAtom);
     return get(internalHashStateAtom);
   },
   (_get, set, update) => set(internalHashStateAtom, update)
