@@ -1,5 +1,6 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useEffect } from "react";
+import { useAtomCallback } from "jotai/utils";
+import { useCallback, useEffect } from "react";
 import styles from "./App.module.scss";
 import { Arrow, ArrowMarker } from "./Arrow";
 import { ControlPoint } from "./ControlPoint";
@@ -15,6 +16,7 @@ import {
 import { eventXY } from "./eventXY";
 import { getBaseLine, getLines } from "./fractal";
 import { onDrag } from "./onDrag";
+import { fromClient, pointToSvg } from "./viewSpace";
 
 export function FractalView() {
   const generator = useAtomValue(generatorAtom);
@@ -27,6 +29,28 @@ export function FractalView() {
 
   const [svgElement, setSvgElement] = useAtom(svgElementAtom);
 
+  const zoom = useAtomCallback(
+    useCallback((_get, set, event: WheelEvent) => {
+      set(viewSettingsAtom, (prev) => {
+        const newScale = prev.scale * 2 ** (-event.deltaY * 0.01);
+        const mousePosition0 = eventXY(event);
+        const mousePosition1 = pointToSvg(
+          { ...prev, scale: newScale },
+          fromClient(prev, mousePosition0)
+        );
+
+        return {
+          ...prev,
+          scale: newScale,
+          translate: {
+            x: prev.translate.x + mousePosition0.x - mousePosition1.x,
+            y: prev.translate.y + mousePosition0.y - mousePosition1.y,
+          },
+        };
+      });
+    }, [])
+  );
+
   useEffect(() => {
     if (!svgElement) {
       return;
@@ -36,18 +60,14 @@ export function FractalView() {
       event.preventDefault();
       event.stopPropagation();
 
-      // TODO: Stay centered on the mouse position.
-      setViewSettings((prev) => ({
-        ...prev,
-        scale: prev.scale * 2 ** (event.deltaY * 0.01),
-      }));
+      zoom(event);
     };
 
     svgElement.addEventListener("wheel", listener);
     return () => {
       svgElement.removeEventListener("wheel", listener);
     };
-  }, [setViewSettings, svgElement]);
+  }, [svgElement, zoom]);
 
   const normalizeView = useSetAtom(normalizeViewAtom);
 
