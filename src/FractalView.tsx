@@ -81,7 +81,7 @@ export function FractalView() {
       <defs>
         <ArrowMarker />
       </defs>
-      <Path points={points} fillMode={fillMode} />
+      <Path points={points} fillMode={fillMode} color="gray" />
 
       <g className={styles.controls}>
         <Arrow {...getBaseLine(generator)} color="#ff0000" />
