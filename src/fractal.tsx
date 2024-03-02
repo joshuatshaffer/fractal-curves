@@ -1,61 +1,28 @@
+import { Point, PointLike } from "./Point";
 import { pipeline } from "./pipeline";
 
-export interface Point {
-  x: number;
-  y: number;
-}
-
-/**
- * A line segment from one point to another.
- */
-export interface Line {
-  from: Point;
-  to: Point;
-}
-
-export interface GeneratorSegment extends Point {
+export interface GeneratorSegment extends PointLike {
   reversed: boolean;
 }
 
 export type FractalCurveGenerator = GeneratorSegment[];
 
-export function getBaseLine(generator: FractalCurveGenerator): Line {
+export function getBaseLine(generator: FractalCurveGenerator) {
   return {
-    from: { x: 0, y: 0 },
-    to: generator[generator.length - 1],
+    from: Point.zero,
+    to: Point.from(generator[generator.length - 1]),
   };
 }
 
-export function getLines(generator: FractalCurveGenerator): Line[] {
-  return generator.map((to, i) => {
-    const from = generator[i - 1] ?? { x: 0, y: 0 };
-    return to.reversed ? { from: to, to: from } : { from, to };
-  });
-}
-
-function getRotationAndScale({ from, to }: Line): {
-  angle: number;
-  mag: number;
-} {
-  const dx = to.x - from.x;
-  const dy = to.y - from.y;
-  const angle = Math.atan2(dy, dx);
-  const mag = Math.sqrt(dx * dx + dy * dy);
-  return { angle, mag };
-}
-
-export function scale({ x, y }: Point, factor: number): Point {
-  return { x: x * factor, y: y * factor };
-}
-
-export function rotate({ x, y }: Point, angle: number): Point {
-  const c = Math.cos(angle);
-  const s = Math.sin(angle);
-  return { x: x * c - y * s, y: x * s + y * c };
-}
-
-export function translate(p: Point, d: Point): Point {
-  return { x: p.x + d.x, y: p.y + d.y };
+export function getLines(generator: FractalCurveGenerator) {
+  return generator
+    .map((x) => ({ reversed: x.reversed, p: Point.from(x) }))
+    .map(({ reversed, p: to }, i, a) => {
+      const from = a[i - 1]?.p ?? Point.zero;
+      return reversed
+        ? { reversed: true, from: to, to: from }
+        : { reversed: false, from, to };
+    });
 }
 
 export function generateFractalCurve(
@@ -68,57 +35,42 @@ export function generateFractalCurve(
     return generateFractalCurve(generator, 0);
   }
 
+  const l = getBaseLine(generator);
+
   if (iterations === 0) {
-    const l = getBaseLine(generator);
     return [l.from, l.to];
   }
 
-  const base = getRotationAndScale(getBaseLine(generator));
+  const baseDelta = l.to.subtract(l.from);
 
   if (iterations <= 1) {
     return [
-      { x: 0, y: 0 },
+      Point.zero,
       ...generator.map((p, i) => {
-        const fooX =
-          ((Math.cos(base.angle) * (i + 1)) / generator.length) * base.mag;
-        const fooY =
-          ((Math.sin(base.angle) * (i + 1)) / generator.length) * base.mag;
-        return {
-          x: fooX * (1 - iterations) + p.x * iterations,
-          y: fooY * (1 - iterations) + p.y * iterations,
-        };
+        return Point.lerp(
+          baseDelta.scale((i + 1) / generator.length),
+          Point.from(p),
+          iterations
+        );
       }),
     ];
   }
 
   const points = generateFractalCurve(generator, iterations - 1);
 
-  return generator
-    .map((to, i) => {
-      const from = generator[i - 1] ?? { x: 0, y: 0 };
-      return to.reversed
-        ? { reversed: true, from: to, to: from }
-        : { reversed: false, from, to };
-    })
-    .flatMap(({ from, to, reversed }, i) => {
-      const { angle: angle, mag: mag } = getRotationAndScale({ from, to });
+  return getLines(generator).flatMap(({ from, to, reversed }, i) => {
+    const delta = to.subtract(from);
 
-      const scaleFactor = mag / base.mag;
-      const rotation = angle - base.angle;
+    const scaleFactor = delta.mag() / baseDelta.mag();
+    const rotation = delta.angle() - baseDelta.angle();
 
-      return pipeline(
-        points.map((p) =>
-          pipeline(p)
-            .then((p) => scale(p, scaleFactor))
-            .then((p) => rotate(p, rotation))
-            .then((p) => translate(p, from))
-            .done()
-        )
-      )
-        .then((movedPoints) => (reversed ? movedPoints.reverse() : movedPoints))
-        .then((movedPoints) => (i === 0 ? movedPoints : movedPoints.slice(1)))
-        .done();
-    });
+    return pipeline(
+      points.map((p) => p.scale(scaleFactor).rotate(rotation).add(from))
+    )
+      .then((movedPoints) => (reversed ? movedPoints.reverse() : movedPoints))
+      .then((movedPoints) => (i === 0 ? movedPoints : movedPoints.slice(1)))
+      .done();
+  });
 }
 
 export function maxIterationsFromMaxPoints(

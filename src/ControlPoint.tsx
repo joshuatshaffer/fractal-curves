@@ -1,5 +1,6 @@
 import { useAtom } from "jotai";
 import style from "./ControlPoint.module.scss";
+import { Point } from "./Point";
 import { generatorAtom, viewSettingsAtom } from "./atoms/atoms";
 import { eventXY } from "./eventXY";
 import { onDrag } from "./onDrag";
@@ -9,7 +10,10 @@ export function ControlPoint({ index }: { index: number }) {
   const [generator, setGenerator] = useAtom(generatorAtom);
   const [viewSettings, setViewSettings] = useAtom(viewSettingsAtom);
 
-  const point = pointToSvg(viewSettings, generator[index] ?? { x: 0, y: 0 });
+  const point = pointToSvg(
+    viewSettings,
+    Point.from(generator[index] ?? Point.zero)
+  );
 
   return (
     <circle
@@ -19,24 +23,22 @@ export function ControlPoint({ index }: { index: number }) {
         return {
           onDragMove: (e) => {
             const current = eventXY(e);
-            const dx = (current.x - start.x) / viewSettings.scale;
-            const dy = (current.y - start.y) / viewSettings.scale;
+            const d = current.subtract(start).scale(1 / viewSettings.scale);
 
             if (index === -1) {
               setViewSettings({
                 ...viewSettings,
-                translate: {
-                  x: viewSettings.translate.x + dx * viewSettings.scale,
-                  y: viewSettings.translate.y + dy * viewSettings.scale,
-                },
+                translate: viewSettings.translate.add(
+                  d.scale(viewSettings.scale)
+                ),
               });
               setGenerator(
-                generator.map((p) => ({ ...p, x: p.x - dx, y: p.y - dy }))
+                generator.map((p) => ({ ...p, x: p.x - d.x, y: p.y - d.y }))
               );
             } else {
               setGenerator(
                 generator.map((p, i) =>
-                  i === index ? { ...p, x: p.x + dx, y: p.y + dy } : p
+                  i === index ? { ...p, x: p.x + d.x, y: p.y + d.y } : p
                 )
               );
             }

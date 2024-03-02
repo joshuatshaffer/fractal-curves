@@ -42,10 +42,9 @@ export function FractalView() {
         return {
           ...prev,
           scale: newScale,
-          translate: {
-            x: prev.translate.x + mousePosition0.x - mousePosition1.x,
-            y: prev.translate.y + mousePosition0.y - mousePosition1.y,
-          },
+          translate: prev.translate
+            .add(mousePosition0)
+            .subtract(mousePosition1),
         };
       });
     }, [])
@@ -85,14 +84,10 @@ export function FractalView() {
         return {
           onDragMove: (event) => {
             const current = eventXY(event);
-            const dx = current.x - start.x;
-            const dy = current.y - start.y;
+            const d = current.subtract(start);
             setViewSettings({
               ...viewSettings,
-              translate: {
-                x: viewSettings.translate.x + dx,
-                y: viewSettings.translate.y + dy,
-              },
+              translate: viewSettings.translate.add(d),
             });
           },
         };

@@ -1,6 +1,6 @@
 import { useAtom } from "jotai";
+import { Point } from "./Point";
 import { generatorAtom } from "./atoms/atoms";
-import { scale, translate } from "./fractal";
 
 export function GeneratorEditor() {
   const [generator, setGenerator] = useAtom(generatorAtom);
@@ -29,10 +29,10 @@ export function GeneratorEditor() {
               type="button"
               onClick={() => {
                 setGenerator((g) => {
-                  const from = g[i - 1] ?? { x: 0, y: 0 };
+                  const from = g[i - 1] ?? Point.zero;
                   const to = g[i];
 
-                  const mid = scale(translate(to, from), 0.5);
+                  const mid = Point.from(to).add(from).scale(0.5);
 
                   const newGenerator = [...g];
                   newGenerator.splice(i, 0, { ...to, ...mid });

@@ -1,20 +1,14 @@
-import { Point, scale, translate } from "./fractal";
+import { Point } from "./Point";
 
 export interface ViewSettings {
   scale: number;
   translate: Point;
 }
 
-export function pointToSvg(v: ViewSettings, p: Point): Point {
-  return translate(scale(p, v.scale), v.translate);
+export function pointToSvg(v: ViewSettings, p: Point) {
+  return p.scale(v.scale).add(v.translate);
 }
 
-export function fromClient(v: ViewSettings, p: Point): Point {
-  return scale(
-    translate(p, {
-      x: -v.translate.x,
-      y: -v.translate.y,
-    }),
-    1 / v.scale
-  );
+export function fromClient(v: ViewSettings, p: Point) {
+  return p.subtract(v.translate).scale(1 / v.scale);
 }

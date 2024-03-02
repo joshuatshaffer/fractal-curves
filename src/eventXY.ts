@@ -1,3 +1,5 @@
+import { Point } from "./Point";
+
 export type EventWithClientXY =
   | MouseEvent
   | TouchEvent
@@ -15,5 +17,5 @@ export function eventY(event: EventWithClientXY) {
 }
 
 export function eventXY(event: EventWithClientXY) {
-  return { x: eventX(event), y: eventY(event) };
+  return new Point(eventX(event), eventY(event));
 }

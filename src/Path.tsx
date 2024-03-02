@@ -1,6 +1,6 @@
 import { useAtomValue } from "jotai";
+import { Point } from "./Point";
 import { viewSettingsAtom } from "./atoms/atoms";
-import { Point } from "./fractal";
 import { pointToSvg } from "./viewSpace";
 
 export function Path({
