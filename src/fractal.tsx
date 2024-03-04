@@ -1,7 +1,7 @@
-import { Point, PointLike } from "./Point";
+import { Vector2, Vector2Like } from "./Vector2";
 import { pipeline } from "./pipeline";
 
-export interface GeneratorSegment extends PointLike {
+export interface GeneratorSegment extends Vector2Like {
   reversed: boolean;
 }
 
@@ -9,16 +9,16 @@ export type FractalCurveGenerator = GeneratorSegment[];
 
 export function getBaseLine(generator: FractalCurveGenerator) {
   return {
-    from: Point.zero,
-    to: Point.from(generator[generator.length - 1]),
+    from: Vector2.zero,
+    to: Vector2.from(generator[generator.length - 1]),
   };
 }
 
 export function getLines(generator: FractalCurveGenerator) {
   return generator
-    .map((x) => ({ reversed: x.reversed, p: Point.from(x) }))
+    .map((x) => ({ reversed: x.reversed, p: Vector2.from(x) }))
     .map(({ reversed, p: to }, i, a) => {
-      const from = a[i - 1]?.p ?? Point.zero;
+      const from = a[i - 1]?.p ?? Vector2.zero;
       return reversed
         ? { reversed: true, from: to, to: from }
         : { reversed: false, from, to };
@@ -28,7 +28,7 @@ export function getLines(generator: FractalCurveGenerator) {
 export function generateFractalCurve(
   generator: FractalCurveGenerator,
   iterations: number
-): Point[] {
+): Vector2[] {
   if (iterations < 0 || !Number.isFinite(iterations)) {
     console.error("Iterations must be a non-negative number");
     // Be fault tolerant and use 0 iterations.
@@ -45,11 +45,11 @@ export function generateFractalCurve(
 
   if (iterations <= 1) {
     return [
-      Point.zero,
+      Vector2.zero,
       ...generator.map((p, i) => {
-        return Point.lerp(
+        return Vector2.lerp(
           baseDelta.scale((i + 1) / generator.length),
-          Point.from(p),
+          Vector2.from(p),
           iterations
         );
       }),

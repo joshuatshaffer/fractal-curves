@@ -1,5 +1,5 @@
 import { useAtomValue } from "jotai";
-import { Point } from "./Point";
+import { Vector2 } from "./Vector2";
 import { viewSettingsAtom } from "./atoms/atoms";
 import { pointToSvg } from "./viewSpace";
 
@@ -8,8 +8,8 @@ export function Arrow({
   to,
   color = "black",
 }: {
-  from: Point;
-  to: Point;
+  from: Vector2;
+  to: Vector2;
   color?: string;
 }) {
   const viewSettings = useAtomValue(viewSettingsAtom);

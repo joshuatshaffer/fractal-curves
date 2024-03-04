@@ -1,4 +1,4 @@
-import { Point } from "./Point";
+import { Vector2 } from "./Vector2";
 
 export type EventWithClientXY =
   | MouseEvent
@@ -17,5 +17,5 @@ export function eventY(event: EventWithClientXY) {
 }
 
 export function eventXY(event: EventWithClientXY) {
-  return new Point(eventX(event), eventY(event));
+  return new Vector2(eventX(event), eventY(event));
 }

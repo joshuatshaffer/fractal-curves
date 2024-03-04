@@ -1,6 +1,6 @@
 import { useAtom } from "jotai";
 import style from "./ControlPoint.module.scss";
-import { Point } from "./Point";
+import { Vector2 } from "./Vector2";
 import { generatorAtom, viewSettingsAtom } from "./atoms/atoms";
 import { eventXY } from "./eventXY";
 import { onDrag } from "./onDrag";
@@ -12,7 +12,7 @@ export function ControlPoint({ index }: { index: number }) {
 
   const point = pointToSvg(
     viewSettings,
-    Point.from(generator[index] ?? Point.zero)
+    Vector2.from(generator[index] ?? Vector2.zero)
   );
 
   return (

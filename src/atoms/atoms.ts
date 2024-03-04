@@ -1,6 +1,6 @@
 import { PrimitiveAtom, atom } from "jotai";
 import { focusAtom } from "jotai-optics";
-import { Point } from "../Point";
+import { Vector2 } from "../Vector2";
 import {
   FractalCurveGenerator,
   generateFractalCurve,
@@ -108,7 +108,7 @@ export const pointsAtom = atom((get) =>
 
 export const viewSettingsAtom = atom<ViewSettings>({
   scale: 1,
-  translate: Point.zero,
+  translate: Vector2.zero,
 });
 
 export const svgElementAtom = atom<SVGSVGElement | null>(null);
@@ -145,8 +145,8 @@ export const normalizeViewAtom = atom(null, (get, set) => {
 
   set(viewSettingsAtom, {
     scale: scale,
-    translate: new Point(svgElement.clientWidth, svgElement.clientHeight)
-      .subtract(new Point(maxX + minX, maxY + minY).scale(scale))
+    translate: new Vector2(svgElement.clientWidth, svgElement.clientHeight)
+      .subtract(new Vector2(maxX + minX, maxY + minY).scale(scale))
       .scale(1 / 2),
   });
 });

@@ -1,5 +1,5 @@
 import { useAtomValue } from "jotai";
-import { Point } from "./Point";
+import { Vector2 } from "./Vector2";
 import { viewSettingsAtom } from "./atoms/atoms";
 import { pointToSvg } from "./viewSpace";
 
@@ -8,7 +8,7 @@ export function Path({
   fillMode,
   color = "black",
 }: {
-  points: Point[];
+  points: Vector2[];
   fillMode: boolean;
   color?: string;
 }) {

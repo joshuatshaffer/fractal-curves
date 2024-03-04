@@ -1,5 +1,5 @@
 import { useAtom } from "jotai";
-import { Point } from "./Point";
+import { Vector2 } from "./Vector2";
 import { generatorAtom } from "./atoms/atoms";
 
 export function GeneratorEditor() {
@@ -29,10 +29,10 @@ export function GeneratorEditor() {
               type="button"
               onClick={() => {
                 setGenerator((g) => {
-                  const from = g[i - 1] ?? Point.zero;
+                  const from = g[i - 1] ?? Vector2.zero;
                   const to = g[i];
 
-                  const mid = Point.from(to).add(from).scale(0.5);
+                  const mid = Vector2.from(to).add(from).scale(0.5);
 
                   const newGenerator = [...g];
                   newGenerator.splice(i, 0, { ...to, ...mid });
