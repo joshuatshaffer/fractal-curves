@@ -103,7 +103,7 @@ export const fillModeAtom = focusAtom(hashStateAtom, (optic) =>
 );
 
 export const pointsAtom = atom((get) =>
-  generateFractalCurve(get(hashStateAtom).generator, get(iterationsAtom))
+  generateFractalCurve(get(generatorAtom), get(iterationsAtom))
 );
 
 export const viewSettingsAtom = atom<ViewSettings>({
@@ -125,10 +125,7 @@ export const normalizeViewAtom = atom(null, (get, set) => {
   let minY = Infinity;
   let maxY = -Infinity;
 
-  for (const p of generateFractalCurve(
-    get(generatorAtom),
-    get(maxIterationsAtom)
-  )) {
+  for (const p of get(pointsAtom)) {
     minX = Math.min(minX, p.x);
     maxX = Math.max(maxX, p.x);
     minY = Math.min(minY, p.y);
