@@ -12,7 +12,7 @@ import { hashStateAtom } from "./hashState";
 /**
  * Limit the number of points drawn to avoid crashing the browser.
  */
-const maxPoints = 10_000;
+const maxPoints = 100_000;
 
 export const generatorAtom = focusAtom(hashStateAtom, (optic) =>
   optic.prop("generator")
@@ -111,13 +111,8 @@ export const viewSettingsAtom = atom<ViewSettings>({
   translate: Vector2.zero,
 });
 
-export const svgElementAtom = atom<SVGSVGElement | null>(null);
-
 export const normalizeViewAtom = atom(null, (get, set) => {
-  const svgElement = get(svgElementAtom);
-  if (!svgElement) {
-    return;
-  }
+  const windowSize = new Vector2(window.innerWidth, window.innerHeight);
 
   let minX = Infinity;
   let maxX = -Infinity;
@@ -125,7 +120,10 @@ export const normalizeViewAtom = atom(null, (get, set) => {
   let minY = Infinity;
   let maxY = -Infinity;
 
-  for (const p of get(pointsAtom)) {
+  for (const p of generateFractalCurve(
+    get(generatorAtom),
+    get(maxIterationsAtom)
+  )) {
     minX = Math.min(minX, p.x);
     maxX = Math.max(maxX, p.x);
     minY = Math.min(minY, p.y);
@@ -135,14 +133,11 @@ export const normalizeViewAtom = atom(null, (get, set) => {
   const dx = maxX - minX;
   const dy = maxY - minY;
 
-  const scale = Math.min(
-    (svgElement.clientWidth - 20) / dx,
-    (svgElement.clientHeight - 20) / dy
-  );
+  const scale = Math.min((windowSize.x - 20) / dx, (windowSize.y - 20) / dy);
 
   set(viewSettingsAtom, {
     scale: scale,
-    translate: new Vector2(svgElement.clientWidth, svgElement.clientHeight)
+    translate: windowSize
       .subtract(new Vector2(maxX + minX, maxY + minY).scale(scale))
       .scale(1 / 2),
   });

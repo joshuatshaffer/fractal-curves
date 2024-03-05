@@ -1,16 +1,14 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useAtomCallback } from "jotai/utils";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import styles from "./App.module.scss";
 import { Arrow, ArrowMarker } from "./Arrow";
 import { ControlPoint } from "./ControlPoint";
-import { Path } from "./Path";
 import {
   fillModeAtom,
   generatorAtom,
+  iterationsAtom,
   normalizeViewAtom,
-  pointsAtom,
-  svgElementAtom,
   viewSettingsAtom,
 } from "./atoms/atoms";
 import { eventXY } from "./eventXY";
@@ -21,13 +19,9 @@ import { fromClient, pointToSvg } from "./viewSpace";
 export function FractalView() {
   const generator = useAtomValue(generatorAtom);
 
-  const fillMode = useAtomValue(fillModeAtom);
-
-  const points = useAtomValue(pointsAtom);
-
   const [viewSettings, setViewSettings] = useAtom(viewSettingsAtom);
 
-  const [svgElement, setSvgElement] = useAtom(svgElementAtom);
+  const [svgElement, setSvgElement] = useState<SVGSVGElement | null>(null);
 
   const zoom = useAtomCallback(
     useCallback((_get, set, event: WheelEvent) => {
@@ -76,38 +70,92 @@ export function FractalView() {
   }, [normalizeView]);
 
   return (
-    <svg
-      ref={setSvgElement}
-      className={styles.view}
-      {...onDrag((event) => {
-        const start = eventXY(event);
-        return {
-          onDragMove: (event) => {
-            const current = eventXY(event);
-            const d = current.subtract(start);
-            setViewSettings({
-              ...viewSettings,
-              translate: viewSettings.translate.add(d),
-            });
-          },
-        };
-      })}
-    >
-      <defs>
-        <ArrowMarker />
-      </defs>
-      <Path points={points} fillMode={fillMode} color="gray" />
+    <>
+      <Canvas />
+      <svg
+        ref={setSvgElement}
+        className={styles.view}
+        {...onDrag((event) => {
+          const start = eventXY(event);
+          return {
+            onDragMove: (event) => {
+              const current = eventXY(event);
+              const d = current.subtract(start);
+              setViewSettings({
+                ...viewSettings,
+                translate: viewSettings.translate.add(d),
+              });
+            },
+          };
+        })}
+      >
+        <defs>
+          <ArrowMarker />
+        </defs>
 
-      <g className={styles.controls}>
-        <Arrow {...getBaseLine(generator)} color="#ff0000" />
-        {getLines(generator).map(({ from, to }, i) => (
-          <Arrow key={i} from={from} to={to} color="#0000ff" />
-        ))}
-        <ControlPoint index={-1} />
-        {generator.map((_, i) => (
-          <ControlPoint key={i} index={i} />
-        ))}
-      </g>
-    </svg>
+        <g className={styles.controls}>
+          <Arrow {...getBaseLine(generator)} color="#ff0000" />
+          {getLines(generator).map(({ from, to }, i) => (
+            <Arrow key={i} from={from} to={to} color="#0000ff" />
+          ))}
+          <ControlPoint index={-1} />
+          {generator.map((_, i) => (
+            <ControlPoint key={i} index={i} />
+          ))}
+        </g>
+      </svg>
+    </>
   );
+}
+
+function Canvas() {
+  const [worker] = useState(
+    () =>
+      new Worker(new URL("./renderer-worker.ts", import.meta.url), {
+        type: "module",
+      })
+  );
+
+  const generator = useAtomValue(generatorAtom);
+
+  const fillMode = useAtomValue(fillModeAtom);
+
+  const viewSettings = useAtomValue(viewSettingsAtom);
+
+  const iterations = useAtomValue(iterationsAtom);
+
+  useEffect(() => {
+    worker.postMessage({
+      type: "paint",
+      width: window.innerWidth,
+      height: window.innerHeight,
+      viewSettings,
+      iterations,
+      generator,
+      fillMode,
+      gradient: false,
+    });
+  }, [fillMode, generator, iterations, viewSettings, worker]);
+
+  const [canvasElement, setCanvasElement] = useState<HTMLCanvasElement | null>(
+    null
+  );
+
+  useEffect(() => {
+    if (!canvasElement) {
+      return;
+    }
+
+    const offscreen = canvasElement.transferControlToOffscreen();
+
+    worker.postMessage(
+      {
+        type: "setCanvas",
+        canvas: offscreen,
+      },
+      [offscreen]
+    );
+  }, [canvasElement, worker]);
+
+  return <canvas ref={setCanvasElement} className={styles.view} />;
 }
