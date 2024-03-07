@@ -5,10 +5,10 @@ import styles from "./App.module.scss";
 import { Arrow, ArrowMarker } from "./Arrow";
 import { ControlPoint } from "./ControlPoint";
 import {
-  fillModeAtom,
   generatorAtom,
   iterationsAtom,
   normalizeViewAtom,
+  renderModeAtom,
   viewSettingsAtom,
 } from "./atoms/atoms";
 import { eventXY } from "./eventXY";
@@ -117,11 +117,8 @@ function Canvas() {
   );
 
   const generator = useAtomValue(generatorAtom);
-
-  const fillMode = useAtomValue(fillModeAtom);
-
+  const renderMode = useAtomValue(renderModeAtom);
   const viewSettings = useAtomValue(viewSettingsAtom);
-
   const iterations = useAtomValue(iterationsAtom);
 
   useEffect(() => {
@@ -132,10 +129,9 @@ function Canvas() {
       viewSettings,
       iterations,
       generator,
-      fillMode,
-      gradient: false,
+      renderMode,
     });
-  }, [fillMode, generator, iterations, viewSettings, worker]);
+  }, [renderMode, generator, iterations, viewSettings, worker]);
 
   const [canvasElement, setCanvasElement] = useState<HTMLCanvasElement | null>(
     null

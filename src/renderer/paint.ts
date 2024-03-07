@@ -11,8 +11,7 @@ export interface PaintArgs {
   iterations: number;
   viewSettings: ViewSettings;
   generator: FractalCurveGenerator;
-  fillMode: boolean;
-  gradient: boolean;
+  renderMode: "line" | "fill" | "gradient";
 }
 
 export function paint(
@@ -29,7 +28,7 @@ export function paint(
 
   ctx.clearRect(0, 0, args.width, args.height);
 
-  if (args.gradient) {
+  if (args.renderMode === "gradient") {
     for (let i = 1; i < points.length; i++) {
       ctx.strokeStyle = `hsl(${(i / points.length) * 360}, 100%, 50%)`;
 
@@ -41,7 +40,7 @@ export function paint(
       ctx.lineTo(to.x, to.y);
       ctx.stroke();
     }
-  } else if (args.fillMode) {
+  } else if (args.renderMode === "fill") {
     const baseLine = getBaseLine(args.generator);
     const baseDelta = pointToSvg(args.viewSettings, baseLine.to).subtract(
       pointToSvg(args.viewSettings, baseLine.from)

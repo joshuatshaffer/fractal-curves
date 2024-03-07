@@ -98,8 +98,8 @@ export const iterationsAtom: PrimitiveAtom<number> = atom(
   }
 );
 
-export const fillModeAtom = focusAtom(hashStateAtom, (optic) =>
-  optic.prop("fillMode")
+export const renderModeAtom = focusAtom(hashStateAtom, (optic) =>
+  optic.prop("renderMode")
 );
 
 export const pointsAtom = atom((get) =>

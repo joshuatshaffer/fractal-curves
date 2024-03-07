@@ -5,7 +5,7 @@ import { FractalCurveGenerator } from "../fractal";
 
 export interface HashState {
   iterations: number;
-  fillMode: boolean;
+  renderMode: "line" | "fill" | "gradient";
   generator: FractalCurveGenerator;
 }
 
@@ -30,11 +30,12 @@ function writeStateToUrl(state: HashState) {
 
 const internalHashStateAtom: PrimitiveAtom<HashState> = atom(
   (() =>
-    readStateFromUrl() ?? {
+    readStateFromUrl() ??
+    ({
       iterations: 4,
-      fillMode: false,
+      renderMode: "line",
       generator: dragon.generator,
-    })()
+    } as const))()
 );
 
 const debounceTime = 500;
