@@ -1,6 +1,6 @@
 import { useAtom } from "jotai";
-import { Vector2 } from "./Vector2";
-import { generatorAtom } from "./atoms/atoms";
+import { Vector2 } from "../Vector2";
+import { generatorAtom } from "../atoms/atoms";
 
 export function GeneratorEditor() {
   const [generator, setGenerator] = useAtom(generatorAtom);
