@@ -1,7 +1,7 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { atomEffect } from "jotai-effect";
 import { useAtomCallback } from "jotai/utils";
-import { RefCallback, useCallback, useEffect, useMemo, useState } from "react";
+import { RefCallback, useCallback, useEffect, useState } from "react";
 import { Arrow, ArrowMarker } from "./Arrow";
 import { ControlPoint } from "./ControlPoint";
 import styles from "./FractalView.module.scss";
@@ -115,44 +115,41 @@ function UiOverlay() {
   );
 }
 
+function initRendererWorker() {
+  const worker = new Worker(
+    new URL("./renderer/renderer-worker.ts", import.meta.url),
+    { type: "module" }
+  );
+
+  const canvasRef: RefCallback<HTMLCanvasElement> = (canvasElement) => {
+    if (!canvasElement) {
+      return;
+    }
+
+    const offscreen = canvasElement.transferControlToOffscreen();
+
+    worker.postMessage({ type: "setCanvas", canvas: offscreen }, [offscreen]);
+  };
+
+  const paintArgsEffectAtom = atomEffect((get) => {
+    worker.postMessage({
+      type: "paint",
+      width: window.innerWidth,
+      height: window.innerHeight,
+      viewSettings: get(viewSettingsAtom),
+      iterations: get(iterationsAtom),
+      generator: get(generatorAtom),
+      renderMode: get(renderModeAtom),
+    });
+  });
+
+  return { canvasRef, paintArgsEffectAtom };
+}
+
 function Canvas() {
-  const [worker] = useState(
-    () =>
-      new Worker(new URL("./renderer/renderer-worker.ts", import.meta.url), {
-        type: "module",
-      })
-  );
+  const [{ canvasRef, paintArgsEffectAtom }] = useState(initRendererWorker);
 
-  useAtomValue(
-    useMemo(
-      () =>
-        atomEffect((get) => {
-          worker.postMessage({
-            type: "paint",
-            width: window.innerWidth,
-            height: window.innerHeight,
-            viewSettings: get(viewSettingsAtom),
-            iterations: get(iterationsAtom),
-            generator: get(generatorAtom),
-            renderMode: get(renderModeAtom),
-          });
-        }),
-      [worker]
-    )
-  );
-
-  const canvasRef: RefCallback<HTMLCanvasElement> = useCallback(
-    (canvasElement) => {
-      if (!canvasElement) {
-        return;
-      }
-
-      const offscreen = canvasElement.transferControlToOffscreen();
-
-      worker.postMessage({ type: "setCanvas", canvas: offscreen }, [offscreen]);
-    },
-    [worker]
-  );
+  useAtomValue(paintArgsEffectAtom);
 
   return <canvas ref={canvasRef} className={styles.view} />;
 }
