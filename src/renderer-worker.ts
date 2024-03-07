@@ -1,4 +1,8 @@
-import { FractalCurveGenerator, generateFractalCurve } from "./fractal";
+import {
+  FractalCurveGenerator,
+  generateFractalCurve,
+  getBaseLine,
+} from "./fractal";
 import { ViewSettings, pointToSvg } from "./viewSpace";
 
 function paint(
@@ -27,19 +31,43 @@ function paint(
       ctx.lineTo(to.x, to.y);
       ctx.stroke();
     }
+  } else if (args.fillMode) {
+    const baseLine = getBaseLine(args.generator);
+    const baseDelta = pointToSvg(args.viewSettings, baseLine.to).subtract(
+      pointToSvg(args.viewSettings, baseLine.from)
+    );
+
+    const extensionBoxTopLeft = points[0].subtract(baseDelta.scale(10));
+    const extensionBoxBottomLeft = extensionBoxTopLeft.add(
+      baseDelta.scale(10).rotate(Math.PI / 2)
+    );
+
+    const extensionBoxTopRight = points[points.length - 1].add(
+      baseDelta.scale(10)
+    );
+    const extensionBoxBottomRight = extensionBoxTopRight.add(
+      baseDelta.scale(10).rotate(Math.PI / 2)
+    );
+
+    ctx.fillStyle = `gray`;
+    ctx.beginPath();
+    ctx.moveTo(extensionBoxBottomLeft.x, extensionBoxBottomLeft.y);
+    ctx.lineTo(extensionBoxTopLeft.x, extensionBoxTopLeft.y);
+    ctx.lineTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) {
+      ctx.lineTo(points[i].x, points[i].y);
+    }
+    ctx.lineTo(extensionBoxTopRight.x, extensionBoxTopRight.y);
+    ctx.lineTo(extensionBoxBottomRight.x, extensionBoxBottomRight.y);
+    ctx.fill("evenodd");
   } else {
     ctx.strokeStyle = `#00000088`;
-    ctx.fillStyle = `gray`;
     ctx.beginPath();
     ctx.moveTo(points[0].x, points[0].y);
     for (let i = 1; i < points.length; i++) {
       ctx.lineTo(points[i].x, points[i].y);
     }
-    if (args.fillMode) {
-      ctx.fill();
-    } else {
-      ctx.stroke();
-    }
+    ctx.stroke();
   }
 }
 
@@ -51,8 +79,6 @@ let paintArgs: PaintArgs | undefined = undefined;
 let animationFrame: number | undefined = undefined;
 
 addEventListener("message", (e) => {
-  console.log("worker got message", e.data);
-
   const args = e.data as PaintArgs | SetCanvasArgs;
 
   if (args.type === "setCanvas") {
