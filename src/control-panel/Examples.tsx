@@ -1,3 +1,4 @@
+import { css } from "astroturf";
 import { useSetAtom } from "jotai";
 import { loadGeneratorAtom } from "../atoms/atoms";
 import {
@@ -11,7 +12,12 @@ export function Examples() {
   const loadGenerator = useSetAtom(loadGeneratorAtom);
 
   return (
-    <div>
+    <div
+      css={css`
+        display: flex;
+        gap: 0.5rem;
+      `}
+    >
       {[dragon, snowflakeSweep, gosperCurve, sierpinskiArrowhead].map(
         (example) => (
           <button
