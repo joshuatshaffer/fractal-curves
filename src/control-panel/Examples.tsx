@@ -1,4 +1,4 @@
-import { css } from "astroturf";
+import { css } from "@linaria/core";
 import { useSetAtom } from "jotai";
 import { loadGeneratorAtom } from "../atoms/atoms";
 import {
@@ -13,7 +13,7 @@ export function Examples() {
 
   return (
     <div
-      css={css`
+      className={css`
         display: flex;
         gap: 0.5rem;
       `}

@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@linaria/core": "6.1.0",
     "jotai": "2.7.0",
     "jotai-effect": "0.6.0",
     "jotai-optics": "0.3.2",
@@ -23,7 +24,7 @@
     "@typescript-eslint/eslint-plugin": "^7.0.2",
     "@typescript-eslint/parser": "^7.0.2",
     "@vitejs/plugin-react": "^4.2.1",
-    "astroturf": "1.2.0",
+    "@wyw-in-js/vite": "0.5.0",
     "eslint": "^8.56.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
