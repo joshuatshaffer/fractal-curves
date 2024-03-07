@@ -2,10 +2,20 @@ import {
   FractalCurveGenerator,
   generateFractalCurve,
   getBaseLine,
-} from "./fractal";
-import { ViewSettings, pointToSvg } from "./viewSpace";
+} from "../fractal";
+import { ViewSettings, pointToSvg } from "../viewSpace";
 
-function paint(
+export interface PaintArgs {
+  width: number;
+  height: number;
+  iterations: number;
+  viewSettings: ViewSettings;
+  generator: FractalCurveGenerator;
+  fillMode: boolean;
+  gradient: boolean;
+}
+
+export function paint(
   canvas: OffscreenCanvas,
   ctx: OffscreenCanvasRenderingContext2D,
   args: PaintArgs
@@ -69,50 +79,4 @@ function paint(
     }
     ctx.stroke();
   }
-}
-
-let canvas: OffscreenCanvas | undefined = undefined;
-let ctx: OffscreenCanvasRenderingContext2D | null = null;
-
-let paintArgs: PaintArgs | undefined = undefined;
-
-let animationFrame: number | undefined = undefined;
-
-addEventListener("message", (e) => {
-  const args = e.data as PaintArgs | SetCanvasArgs;
-
-  if (args.type === "setCanvas") {
-    if (args.canvas !== canvas) {
-      canvas = args.canvas;
-      // It is important to only call getContext once. If we call it every paint
-      // there will be flickering in Firefox.
-      ctx = canvas.getContext("2d");
-    }
-  } else if (args.type === "paint") {
-    paintArgs = args;
-  }
-
-  animationFrame ??= requestAnimationFrame(() => {
-    animationFrame = undefined;
-    if (canvas && ctx && paintArgs) {
-      paint(canvas, ctx, paintArgs);
-    }
-  });
-});
-
-interface PaintArgs {
-  type: "paint";
-  width: number;
-  height: number;
-  iterations: number;
-  viewSettings: ViewSettings;
-  generator: FractalCurveGenerator;
-  fillMode: boolean;
-  gradient: boolean;
-}
-
-interface SetCanvasArgs {
-  type: "setCanvas";
-
-  canvas: OffscreenCanvas;
 }

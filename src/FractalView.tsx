@@ -111,7 +111,7 @@ export function FractalView() {
 function Canvas() {
   const [worker] = useState(
     () =>
-      new Worker(new URL("./renderer-worker.ts", import.meta.url), {
+      new Worker(new URL("./renderer/renderer-worker.ts", import.meta.url), {
         type: "module",
       })
   );
