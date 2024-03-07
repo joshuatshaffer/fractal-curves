@@ -1,9 +1,9 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useAtomCallback } from "jotai/utils";
 import { useCallback, useEffect, useState } from "react";
-import styles from "./App.module.scss";
 import { Arrow, ArrowMarker } from "./Arrow";
 import { ControlPoint } from "./ControlPoint";
+import styles from "./FractalView.module.scss";
 import {
   generatorAtom,
   iterationsAtom,
@@ -17,6 +17,22 @@ import { onDrag } from "./onDrag";
 import { fromClient, pointToSvg } from "./viewSpace";
 
 export function FractalView() {
+  const normalizeView = useSetAtom(normalizeViewAtom);
+
+  // Normalize view on page load.
+  useEffect(() => {
+    normalizeView();
+  }, [normalizeView]);
+
+  return (
+    <>
+      <Canvas />
+      <UiOverlay />
+    </>
+  );
+}
+
+function UiOverlay() {
   const generator = useAtomValue(generatorAtom);
 
   const [viewSettings, setViewSettings] = useAtom(viewSettingsAtom);
@@ -62,49 +78,39 @@ export function FractalView() {
     };
   }, [svgElement, zoom]);
 
-  const normalizeView = useSetAtom(normalizeViewAtom);
-
-  // Normalize view on page load.
-  useEffect(() => {
-    normalizeView();
-  }, [normalizeView]);
-
   return (
-    <>
-      <Canvas />
-      <svg
-        ref={setSvgElement}
-        className={styles.view}
-        {...onDrag((event) => {
-          const start = eventXY(event);
-          return {
-            onDragMove: (event) => {
-              const current = eventXY(event);
-              const d = current.subtract(start);
-              setViewSettings({
-                ...viewSettings,
-                translate: viewSettings.translate.add(d),
-              });
-            },
-          };
-        })}
-      >
-        <defs>
-          <ArrowMarker />
-        </defs>
+    <svg
+      ref={setSvgElement}
+      className={styles.view}
+      {...onDrag((event) => {
+        const start = eventXY(event);
+        return {
+          onDragMove: (event) => {
+            const current = eventXY(event);
+            const d = current.subtract(start);
+            setViewSettings({
+              ...viewSettings,
+              translate: viewSettings.translate.add(d),
+            });
+          },
+        };
+      })}
+    >
+      <defs>
+        <ArrowMarker />
+      </defs>
 
-        <g className={styles.controls}>
-          <Arrow {...getBaseLine(generator)} color="#ff0000" />
-          {getLines(generator).map(({ from, to }, i) => (
-            <Arrow key={i} from={from} to={to} color="#0000ff" />
-          ))}
-          <ControlPoint index={-1} />
-          {generator.map((_, i) => (
-            <ControlPoint key={i} index={i} />
-          ))}
-        </g>
-      </svg>
-    </>
+      <g className={styles.controls}>
+        <Arrow {...getBaseLine(generator)} color="#ff0000" />
+        {getLines(generator).map(({ from, to }, i) => (
+          <Arrow key={i} from={from} to={to} color="#0000ff" />
+        ))}
+        <ControlPoint index={-1} />
+        {generator.map((_, i) => (
+          <ControlPoint key={i} index={i} />
+        ))}
+      </g>
+    </svg>
   );
 }
 
