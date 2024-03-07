@@ -1,6 +1,5 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import styles from "./App.module.scss";
-import { GeneratorEditor } from "./GeneratorEditor";
+import { GeneratorEditor } from "../GeneratorEditor";
 import {
   iterationsAnimationAtom,
   iterationsAtom,
@@ -8,13 +7,14 @@ import {
   maxIterationsAtom,
   normalizeViewAtom,
   renderModeAtom,
-} from "./atoms/atoms";
+} from "../atoms/atoms";
 import {
   dragon,
   gosperCurve,
   sierpinskiArrowhead,
   snowflakeSweep,
-} from "./exampleFractalCurves";
+} from "../exampleFractalCurves";
+import styles from "./App.module.scss";
 
 export function ControlPanel() {
   const [iterations, setIterations] = useAtom(iterationsAtom);
