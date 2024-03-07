@@ -107,6 +107,11 @@ export function ControlPanel() {
               }}
             />
           </div>
+        </div>
+      </details>
+      <details>
+        <summary>Generator</summary>
+        <div>
           <GeneratorEditor />
         </div>
       </details>
