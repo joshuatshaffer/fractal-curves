@@ -74,7 +74,7 @@ export const iterationsAnimationAtom = (() => {
           return {
             status: "running",
             startTime: performance.now(),
-            totalTime: 1000,
+            totalTime: 5000,
             animationFrameId: requestAnimationFrame(update),
           };
         } else {
