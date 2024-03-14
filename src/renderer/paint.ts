@@ -30,7 +30,7 @@ export function paint(
 
   if (args.renderMode === "gradient") {
     for (let i = 1; i < points.length; i++) {
-      ctx.strokeStyle = `hsl(${(i / points.length) * 360}, 100%, 50%)`;
+      ctx.strokeStyle = `hsl(${(i / points.length) * 300}, 100%, 50%)`;
 
       const from = points[i - 1];
       const to = points[i];
