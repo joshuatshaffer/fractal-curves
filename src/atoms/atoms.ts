@@ -42,7 +42,7 @@ export const iterationsAnimationAtom = (() => {
 
   return atom(
     (get) => get(a).status,
-    (get, set, newStatus: IterationsAnimationState["status"]) => {
+    (get, set, action: "start" | "stop") => {
       const update: FrameRequestCallback = (now) => {
         const state = get(a);
 
@@ -66,24 +66,22 @@ export const iterationsAnimationAtom = (() => {
         });
       };
 
-      set(a, (prevState) => {
-        if (newStatus === "running") {
-          if (prevState.status === "running") {
-            return prevState;
-          }
-          return {
-            status: "running",
-            startTime: performance.now(),
-            totalTime: 5000,
-            animationFrameId: requestAnimationFrame(update),
-          };
-        } else {
-          if (prevState.status === "running") {
-            cancelAnimationFrame(prevState.animationFrameId);
-          }
-          return { status: "stopped" };
-        }
-      });
+      const prevState = get(a);
+      if (prevState.status === "running") {
+        cancelAnimationFrame(prevState.animationFrameId);
+      }
+
+      if (action === "start") {
+        set(internalIterationsAtom, 0);
+        set(a, {
+          status: "running",
+          startTime: performance.now(),
+          totalTime: 5000,
+          animationFrameId: requestAnimationFrame(update),
+        });
+      } else {
+        set(a, { status: "stopped" });
+      }
     }
   );
 })();
@@ -92,7 +90,7 @@ export const iterationsAtom: PrimitiveAtom<number> = atom(
   (get) => Math.min(get(maxIterationsAtom), get(internalIterationsAtom)),
   (_get, set, update) => {
     // Stop the animation when a user manually changes the iterations.
-    set(iterationsAnimationAtom, "stopped");
+    set(iterationsAnimationAtom, "stop");
 
     set(internalIterationsAtom, update);
   }
@@ -150,6 +148,6 @@ export const loadGeneratorAtom = atom(
   (_get, set, generator: FractalCurveGenerator) => {
     set(generatorAtom, generator);
     set(normalizeViewAtom);
-    set(iterationsAnimationAtom, "running");
+    set(iterationsAnimationAtom, "start");
   }
 );

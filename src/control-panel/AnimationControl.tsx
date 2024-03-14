@@ -14,7 +14,7 @@ export function AnimationControl() {
         type="checkbox"
         checked={iterationsAnimation === "running"}
         onChange={(e) => {
-          setIterationsAnimation(e.target.checked ? "running" : "stopped");
+          setIterationsAnimation(e.target.checked ? "start" : "stop");
         }}
       />
     </div>
