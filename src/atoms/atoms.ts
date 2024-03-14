@@ -111,6 +111,8 @@ export const viewSettingsAtom = atom<ViewSettings>({
   translate: Vector2.zero,
 });
 
+export const showControlOverlayAtom = atom(false);
+
 export const normalizeViewAtom = atom(null, (get, set) => {
   const windowSize = new Vector2(window.innerWidth, window.innerHeight);
 

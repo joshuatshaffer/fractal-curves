@@ -5,10 +5,12 @@ import { GeneratorEditor } from "./GeneratorEditor";
 import { IterationsControl } from "./IterationsControl";
 import { NormalizeViewButton } from "./NormalizeViewButton";
 import { RenderModeControl } from "./RenderModeControl";
+import { ShowControlOverlayToggle } from "./ShowControlOverlayToggle";
 
 export function ControlPanel() {
   return (
     <div className={styles.settingsContainer}>
+      <ShowControlOverlayToggle />
       <details>
         <summary>Settings</summary>
         <div>

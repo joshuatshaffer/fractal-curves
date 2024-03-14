@@ -1,7 +1,6 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { atomEffect } from "jotai-effect";
-import { useAtomCallback } from "jotai/utils";
-import { RefCallback, useCallback, useEffect, useState } from "react";
+import { RefCallback, useEffect, useState } from "react";
 import { Arrow, ArrowMarker } from "./Arrow";
 import { ControlPoint } from "./ControlPoint";
 import styles from "./FractalView.module.scss";
@@ -10,6 +9,7 @@ import {
   iterationsAtom,
   normalizeViewAtom,
   renderModeAtom,
+  showControlOverlayAtom,
   viewSettingsAtom,
 } from "./atoms/atoms";
 import { eventXY } from "./eventXY";
@@ -25,24 +25,21 @@ export function FractalView() {
     normalizeView();
   }, [normalizeView]);
 
-  return (
-    <>
-      <Canvas />
-      <UiOverlay />
-    </>
+  const [viewRootElement, setViewRootElement] = useState<HTMLDivElement | null>(
+    null
   );
-}
-
-function UiOverlay() {
-  const generator = useAtomValue(generatorAtom);
-
   const [viewSettings, setViewSettings] = useAtom(viewSettingsAtom);
 
-  const [svgElement, setSvgElement] = useState<SVGSVGElement | null>(null);
+  useEffect(() => {
+    if (!viewRootElement) {
+      return;
+    }
 
-  const zoom = useAtomCallback(
-    useCallback((_get, set, event: WheelEvent) => {
-      set(viewSettingsAtom, (prev) => {
+    const listener = (event: WheelEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      setViewSettings((prev) => {
         const newScale = prev.scale * 2 ** (-event.deltaY * 0.01);
         const mousePosition0 = eventXY(event);
         const mousePosition1 = pointToSvg(
@@ -58,30 +55,19 @@ function UiOverlay() {
             .subtract(mousePosition1),
         };
       });
-    }, [])
-  );
-
-  useEffect(() => {
-    if (!svgElement) {
-      return;
-    }
-
-    const listener = (event: WheelEvent) => {
-      event.preventDefault();
-      event.stopPropagation();
-
-      zoom(event);
     };
 
-    svgElement.addEventListener("wheel", listener);
+    viewRootElement.addEventListener("wheel", listener);
     return () => {
-      svgElement.removeEventListener("wheel", listener);
+      viewRootElement.removeEventListener("wheel", listener);
     };
-  }, [svgElement, zoom]);
+  }, [setViewSettings, viewRootElement]);
+
+  const showControlOverlay = useAtomValue(showControlOverlayAtom);
 
   return (
-    <svg
-      ref={setSvgElement}
+    <div
+      ref={setViewRootElement}
       className={styles.view}
       {...onDrag((event) => {
         const start = eventXY(event);
@@ -97,20 +83,29 @@ function UiOverlay() {
         };
       })}
     >
+      <Canvas />
+      {showControlOverlay ? <UiOverlay /> : null}
+    </div>
+  );
+}
+
+function UiOverlay() {
+  const generator = useAtomValue(generatorAtom);
+
+  return (
+    <svg className={styles.view}>
       <defs>
         <ArrowMarker />
       </defs>
 
-      <g className={styles.controls}>
-        <Arrow {...getBaseLine(generator)} color="#ff0000" />
-        {getLines(generator).map(({ from, to }, i) => (
-          <Arrow key={i} from={from} to={to} color="#0000ff" />
-        ))}
-        <ControlPoint index={-1} />
-        {generator.map((_, i) => (
-          <ControlPoint key={i} index={i} />
-        ))}
-      </g>
+      <Arrow {...getBaseLine(generator)} color="#ff0000" />
+      {getLines(generator).map(({ from, to }, i) => (
+        <Arrow key={i} from={from} to={to} color="#0000ff" />
+      ))}
+      <ControlPoint index={-1} />
+      {generator.map((_, i) => (
+        <ControlPoint key={i} index={i} />
+      ))}
     </svg>
   );
 }
