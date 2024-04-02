@@ -9,6 +9,7 @@ let paintArgs: PaintArgs | undefined = undefined;
 let animationFrame: number | undefined = undefined;
 
 addEventListener("message", (event: MessageEvent<RenderWorkerMessageData>) => {
+  console.log("Received message", event.data);
   const args = event.data;
 
   if (args.type === "setCanvas") {

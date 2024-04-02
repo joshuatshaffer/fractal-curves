@@ -6,4 +6,15 @@ import { defineConfig } from "vite";
 export default defineConfig({
   plugins: [react(), wyw()],
   base: "/fractal-curves/",
+
+  server: {
+    headers: {
+      // Make the app run in an isolated context so that we can have high
+      // precision timing.
+      //
+      // https://developer.mozilla.org/en-US/docs/Web/API/Performance_API/High_precision_timing#reduced_precision
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Cross-Origin-Embedder-Policy": "require-corp",
+    },
+  },
 });

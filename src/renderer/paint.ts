@@ -19,6 +19,8 @@ export function paint(
   ctx: OffscreenCanvasRenderingContext2D,
   args: PaintArgs
 ) {
+  const startTime = performance.now();
+
   canvas.width = args.width;
   canvas.height = args.height;
 
@@ -78,4 +80,8 @@ export function paint(
     }
     ctx.stroke();
   }
+
+  const endTime = performance.now();
+
+  console.log(`Painted in ${endTime - startTime}ms`);
 }
