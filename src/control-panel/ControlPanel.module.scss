@@ -6,6 +6,8 @@
   backdrop-filter: blur(4px);
 
   margin: 8px;
+  // Allow the settings container to be scrolled out of the way.
+  margin-bottom: 90vh;
   max-width: max-content;
   padding: 10px;
 

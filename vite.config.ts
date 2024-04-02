@@ -8,6 +8,7 @@ export default defineConfig({
   base: "/fractal-curves/",
 
   server: {
+    host: "0.0.0.0",
     headers: {
       // Make the app run in an isolated context so that we can have high
       // precision timing.
