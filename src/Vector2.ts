@@ -61,3 +61,7 @@ export class Vector2 implements Vector2Like {
     return from.scale(1 - t).add(to.scale(t));
   }
 }
+
+export function areVector2sEqual(a: Vector2Like, b: Vector2Like) {
+  return a === b || (a.x === b.x && a.y === b.y);
+}

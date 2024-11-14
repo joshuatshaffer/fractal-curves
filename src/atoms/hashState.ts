@@ -1,7 +1,10 @@
-import { PrimitiveAtom, atom } from "jotai";
+import { atom, PrimitiveAtom } from "jotai";
 import { atomEffect } from "jotai-effect";
 import { dragon } from "../exampleFractalCurves";
-import { FractalCurveGenerator } from "../fractal";
+import {
+  areFractalCurveGeneratorsEqual,
+  FractalCurveGenerator,
+} from "../fractal";
 
 export interface HashState {
   iterations: number;
@@ -9,10 +12,25 @@ export interface HashState {
   generator: FractalCurveGenerator;
 }
 
+const defaultHashState = {
+  iterations: 4,
+  renderMode: "line",
+  generator: dragon.generator,
+} as const;
+
+function areHashStatesEqual(a: HashState, b: HashState) {
+  return (
+    a === b ||
+    (a.iterations === b.iterations &&
+      a.renderMode === b.renderMode &&
+      areFractalCurveGeneratorsEqual(a.generator, b.generator))
+  );
+}
+
 /**
  * @returns `undefined` when there is an error parsing the hash state.
  */
-function readStateFromUrl(): HashState | undefined {
+function readStateFromUrl(): HashState {
   const value = window.location.hash.slice(1);
 
   if (value) {
@@ -22,20 +40,22 @@ function readStateFromUrl(): HashState | undefined {
       console.error("Unable to parse URL hash state", error);
     }
   }
+
+  return defaultHashState;
 }
 
 function writeStateToUrl(state: HashState) {
-  window.location.hash = encodeURIComponent(JSON.stringify(state));
+  const prevState = readStateFromUrl();
+
+  window.history[
+    areHashStatesEqual(prevState, state) ? "replaceState" : "pushState"
+  ](null, "", `#${encodeURIComponent(JSON.stringify(state))}`);
+
+  // window.location.hash = encodeURIComponent(JSON.stringify(state));
 }
 
 const internalHashStateAtom: PrimitiveAtom<HashState> = atom(
-  (() =>
-    readStateFromUrl() ??
-    ({
-      iterations: 4,
-      renderMode: "line",
-      generator: dragon.generator,
-    } as const))()
+  readStateFromUrl() ?? defaultHashState
 );
 
 const debounceTime = 500;

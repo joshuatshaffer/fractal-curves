@@ -1,4 +1,4 @@
-import { Vector2, Vector2Like } from "./Vector2";
+import { areVector2sEqual, Vector2, Vector2Like } from "./Vector2";
 import { pipeline } from "./pipeline";
 
 export interface GeneratorSegment extends Vector2Like {
@@ -6,6 +6,28 @@ export interface GeneratorSegment extends Vector2Like {
 }
 
 export type FractalCurveGenerator = GeneratorSegment[];
+
+function areGeneratorSegmentsEqual(a: GeneratorSegment, b: GeneratorSegment) {
+  return a === b || (a.reversed === b.reversed && areVector2sEqual(a, b));
+}
+
+function areArraysEqual<T>(
+  a: T[],
+  b: T[],
+  areElementsEqual: (a: T, b: T) => boolean
+) {
+  return (
+    a === b ||
+    (a.length === b.length && a.every((x, i) => areElementsEqual(x, b[i])))
+  );
+}
+
+export function areFractalCurveGeneratorsEqual(
+  a: FractalCurveGenerator,
+  b: FractalCurveGenerator
+) {
+  return areArraysEqual(a, b, areGeneratorSegmentsEqual);
+}
 
 export function getBaseLine(generator: FractalCurveGenerator) {
   return {
